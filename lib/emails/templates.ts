@@ -6,7 +6,7 @@ const BRAND_COLOR = '#facc15';
 const INK_COLOR = '#0b1c30';
 const MUTED_COLOR = '#526078';
 
-function layout(title: string, preheader: string, content: string): { html: string; text: string } {
+function layout(title: string, preheader: string, content: string): { subject: string; html: string; text: string } {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -71,7 +71,7 @@ function layout(title: string, preheader: string, content: string): { html: stri
 
   const text = `${title}\n\n${preheader}\n\n${stripHtml(content)}\n\n---\nKlean Ur Mind \u00b7 Kozhikode, Kerala\n${BASE_URL}/bookings`;
 
-  return { html, text };
+  return { subject: title, html, text };
 }
 
 function escapeHtml(str: string): string {
@@ -92,6 +92,7 @@ async function getOrderDetails(entityId: string) {
     where: { id: entityId },
     include: {
       address: true,
+      supports: { orderBy: { createdAt: 'asc' } },
       cleaning: true,
       laundry: { include: { bags: true } },
       quotes: { include: { items: true }, orderBy: { version: 'desc' }, take: 1 },
@@ -245,7 +246,7 @@ export async function getTemplate(kind: string, entityId: string): Promise<{ sub
     case 'JOB_STATUS_CHANGED': {
       const cleaningStatus = order.cleaning?.status;
       const laundryStatus = order.laundry?.status;
-      const status = cleaningStatus || laundryStatus;
+      const status = cleaningStatus || laundryStatus || order.status;
       const track = cleaningStatus ? 'cleaning' : 'laundry';
 
       const statusLabels: Record<string, string> = {

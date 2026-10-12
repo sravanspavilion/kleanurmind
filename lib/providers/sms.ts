@@ -1,4 +1,4 @@
-import type { NotificationProvider } from '../providers';
+import type { SmsProvider } from '../providers';
 
 interface TwilioConfig {
   accountSid: string;
@@ -32,7 +32,9 @@ async function getTwilioClient() {
   return twilioClient;
 }
 
-export const smsProvider: NotificationProvider = {
+export const smsProvider: SmsProvider = {
+  sendDirect: sendSmsDirect,
+  isConfigured: isSmsConfigured,
   async send(input) {
     const config = getTwilioConfig();
     if (!config) {
@@ -98,7 +100,7 @@ async function renderSms(kind: string, entityId: string): Promise<{ body: string
     case 'JOB_STATUS_CHANGED': {
       const cleaningStatus = order.cleaning?.status;
       const laundryStatus = order.laundry?.status;
-      const status = cleaningStatus || laundryStatus;
+      const status = cleaningStatus || laundryStatus || order.status;
       const track = cleaningStatus ? 'cleaning' : 'laundry';
 
       const statusLabels: Record<string, string> = {
@@ -122,7 +124,7 @@ async function renderSms(kind: string, entityId: string): Promise<{ body: string
   }
 }
 
-export async function sendSmsDirect(to: string, kind: string, entityId: string) {
+export async function sendSmsDirect(to: string, kind: string, entityId: string): ReturnType<SmsProvider['sendDirect']> {
   const config = getTwilioConfig();
   if (!config) {
     if (process.env.NODE_ENV !== 'production' && process.env.NOTIFICATION_PROVIDER === 'development') {

@@ -1,7 +1,7 @@
 import { requireUser } from '@/lib/auth';
 import { readOrder } from '@/lib/orders';
 import { db } from '@/lib/db';
-import { getStorageProvider, generateStorageKey, optimizeImage, isS3Configured } from '@/lib/storage';
+import { getStorageProvider, generateStorageKey, optimizeImage } from '@/lib/storage/index';
 import { rateLimit, sameOrigin } from '@/lib/security';
 import { DomainError } from '@/lib/domain';
 

@@ -238,6 +238,7 @@ async function main() {
     const laundry = serviceType !== 0;
 
     const order = await db.order.create({
+      include: { appointments: true },
       data: {
         userId: customer.id,
         addressId: address!.id,

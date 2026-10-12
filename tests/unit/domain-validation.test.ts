@@ -191,8 +191,7 @@ describe('Domain Functions', () => {
   describe('localToISO', () => {
     it('should convert local datetime to ISO with IST offset', () => {
       const iso = localToISO('2024-01-15T10:30');
-      expect(iso).toContain('+05:30');
-      expect(iso).toContain('2024-01-15T10:30:00');
+      expect(iso).toBe('2024-01-15T05:00:00.000Z');
     });
   });
 });
@@ -200,7 +199,7 @@ describe('Domain Functions', () => {
 describe('Validation Schemas', () => {
   describe('bookingSchema', () => {
     const validBooking = {
-      requestKey: 'a0b1c2d3-e4f5-6789-0123-456789abcdef',
+      requestKey: 'a0b1c2d3-e4f5-4789-8123-456789abcdef',
       service: 'CLEANING',
       name: 'Test Customer',
       locality: 'Mananchira',

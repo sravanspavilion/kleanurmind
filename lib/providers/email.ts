@@ -1,5 +1,5 @@
 import { createTransport, type Transporter } from 'nodemailer';
-import type { NotificationProvider } from '../providers';
+import type { EmailProvider } from '../providers';
 
 export interface EmailProviderConfig {
   host: string;
@@ -37,7 +37,9 @@ function getTransporter(): Transporter {
   return transporter;
 }
 
-export const emailProvider: NotificationProvider = {
+export const emailProvider: EmailProvider = {
+  sendDirect: sendEmailDirect,
+  isConfigured: isEmailConfigured,
   async send(input) {
     const config = getConfig();
     if (!config) {
@@ -70,7 +72,7 @@ async function renderEmail(kind: string, entityId: string): Promise<{ subject: s
   return getTemplate(kind, entityId);
 }
 
-export async function sendEmailDirect(to: string, kind: string, entityId: string) {
+export async function sendEmailDirect(to: string, kind: string, entityId: string): ReturnType<EmailProvider['sendDirect']> {
   const config = getConfig();
   if (!config) {
     if (process.env.NODE_ENV !== 'production' && process.env.NOTIFICATION_PROVIDER === 'development') {
