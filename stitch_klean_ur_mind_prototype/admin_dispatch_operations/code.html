@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><title>Admin Portal — Klean Ur Mind</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-tertiary":"#ffffff","primary":"#735c00","error-container":"#ffdad6","on-primary-fixed-variant":"#574500","surface-container":"#e5eeff","on-surface":"#0b1c30","tertiary-fixed-dim":"#cdc996","secondary-container":"#d7dff9","surface":"#f8f9ff","surface-bright":"#f8f9ff","surface-container-highest":"#d3e4fe","on-error":"#ffffff","tertiary-container":"#d7d3a0","secondary-fixed":"#d9e2fc","on-tertiary-container":"#5d5b32","tertiary":"#636036","on-primary-container":"#6c5700","inverse-on-surface":"#eaf1ff","surface-container-low":"#eff4ff","primary-fixed":"#ffe083","on-primary-fixed":"#231b00","surface-tint":"#735c00","on-tertiary-fixed":"#1e1c00","on-secondary-fixed":"#121b2e","error":"#ba1a1a","on-secondary-container":"#5a6278","on-tertiary-fixed-variant":"#4a4821","on-background":"#0b1c30","on-primary":"#ffffff","secondary":"#555e74","surface-variant":"#d3e4fe","surface-container-lowest":"#ffffff","inverse-surface":"#213145","on-secondary-fixed-variant":"#3e475b","secondary-fixed-dim":"#bdc6e0","surface-dim":"#cbdbf5","outline-variant":"#d1c6ab","outline":"#7f7660","tertiary-fixed":"#e9e5b0","primary-fixed-dim":"#eec200","inverse-primary":"#eec200","background":"#f8f9ff","on-secondary":"#ffffff","on-error-container":"#93000a","on-surface-variant":"#4d4632","surface-container-high":"#dce9ff","primary-container":"#facc15"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-lg":"1.5rem","space-md":"1rem","margin":"3rem","space-sm":"0.5rem","margin-mobile":"1.25rem","space-xs":"0.25rem","gutter-mobile":"1rem","gutter":"1.5rem","space-xl":"2rem"},"fontFamily":{"label-md":["Inter"],"headline-sm":["Inter"],"headline-lg-mobile":["Inter"],"body-lg":["Inter"],"headline-lg":["Inter"],"headline-md":["Inter"],"label-lg":["Inter"],"display-hero-mobile":["Inter"],"title-md":["Inter"],"caption":["Inter"],"display-hero":["Inter"],"body-md":["Inter"]},"fontSize":{"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"500"}],"headline-sm":["20px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.015em","fontWeight":"600"}],"body-lg":["16px",{"lineHeight":"26px","letterSpacing":"0em","fontWeight":"400"}],"headline-lg":["36px",{"lineHeight":"44px","letterSpacing":"-0.025em","fontWeight":"600"}],"headline-md":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"600"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"display-hero-mobile":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"title-md":["18px",{"lineHeight":"26px","letterSpacing":"-0.01em","fontWeight":"500"}],"caption":["11px",{"lineHeight":"14px","letterSpacing":"0.02em","fontWeight":"400"}],"display-hero":["48px",{"lineHeight":"56px","letterSpacing":"-0.03em","fontWeight":"700"}],"body-md":["14px",{"lineHeight":"22px","letterSpacing":"0em","fontWeight":"400"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between py-space-md"><div class="px-space-md"><div class="flex items-center gap-space-sm mb-space-lg px-2"><img alt="Klean Ur Mind Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAd1WFlyOJAkGuJPbaZYhHcu3y5rdrTYABMOcpJOYP2hEbSKE5_WqC-z4qKLVdZy7sO7smSdO4r4vHVvlRdkrtyLh2wkYFR1jxy62FZuu3b5XFm1Cp_FCQGO6S6P2plnxcJaZqfc2SDSW2wW4kWLxrzuE4sBBA_BXzp9ZK_Cbhqc7CjepfNUGues-SnRBjo3xfOGqxb4RXAmOdOGqRlmo49Wx4RuMrqEV0XNWvS9AUFHk7cMuLD6hT2"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight">Klean Ur Mind</span><span class="font-caption text-caption text-secondary uppercase font-semibold">Admin Hub</span></div></div><div class="mb-space-md px-2 py-space-xs bg-surface-container-low rounded-xl flex items-center justify-between"><span class="font-label-md text-label-md text-on-surface-variant font-medium">Kozhikode Ops</span><span class="w-2 h-2 rounded-full bg-[#16a34a]"></span></div><nav class="space-y-1" data-active-classes="bg-primary-container text-on-surface font-semibold rounded-xl"><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm transition-all bg-primary-container text-on-surface font-semibold rounded-xl" data-path="admin-portal" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span><span class="font-label-lg text-label-lg">Overview</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="admin-orders" href="#"><span class="material-symbols-outlined text-[20px]">local_laundry_service</span><span class="font-label-lg text-label-lg">Order Dispatch</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="admin-zones" href="#"><span class="material-symbols-outlined text-[20px]">map</span><span class="font-label-lg text-label-lg">Zone Manager</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-secondary hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="home" href="#"><span class="material-symbols-outlined text-[20px]">arrow_back</span><span class="font-label-lg text-label-lg">Client View</span></a></nav></div><div class="px-space-md"><div class="p-space-sm bg-surface-container-low rounded-xl"><p class="font-caption text-caption text-on-surface-variant font-medium">Zone Fleet Active</p><p class="font-label-md text-label-md text-on-surface font-bold">5 Vans in Transit</p></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter"><div class="flex items-center gap-space-sm"><span class="font-caption text-caption text-on-surface-variant font-medium bg-surface-container-low px-space-sm py-1 rounded-full">Demo Admin Environment — Kozhikode</span></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-secondary text-[20px]">notifications</span><span class="material-symbols-outlined text-secondary text-[20px]">tune</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Operational Banner & Kozhikode Branch Status -->
+<div class="px-gutter py-space-md bg-surface-container-lowest shadow-sm flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-1.5 rounded-full">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+<span class="font-label-md text-label-md text-on-surface font-semibold tracking-wide">Internal Operations — Kozhikode Branch</span>
+</div>
+<span class="font-body-md text-body-md text-secondary">Live Service Floor &amp; Routing Terminal</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-space-xs text-secondary bg-surface-container-low px-space-md py-1.5 rounded-xl font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span id="currentDateDisplay">Today, 24 Oct 2024</span>
+</div>
+<button class="flex items-center gap-space-xs bg-surface-container-low hover:bg-surface-container text-on-surface px-space-md py-1.5 rounded-xl transition-all font-label-lg text-label-lg" onclick="toggleQuickBroadcastModal()">
+<span class="material-symbols-outlined text-[18px]">campaign</span>
+<span>Team Ping</span>
+</button>
+</div>
+</div>
+<!-- Operational Overview Counters -->
+<div class="p-gutter grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Stat 1 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-secondary font-medium uppercase tracking-wider">Today's Cleaning Jobs</span>
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">cleaning_services</span>
+</div>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold">4</span>
+<span class="font-caption text-caption text-secondary font-medium">3 active / 1 queued</span>
+</div>
+<div class="mt-space-xs w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-3/4 rounded-full"></div>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-secondary font-medium uppercase tracking-wider">Laundry Pickups &amp; Drops</span>
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">local_laundry_service</span>
+</div>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold">6</span>
+<span class="font-caption text-caption text-secondary font-medium">Calicut Beach, Mavoor Rd</span>
+</div>
+<div class="mt-space-xs w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-4/6 rounded-full"></div>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-secondary font-medium uppercase tracking-wider">Awaiting Quotes</span>
+<div class="w-10 h-10 rounded-xl bg-primary-container/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">pending_actions</span>
+</div>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-headline-lg text-headline-lg text-primary font-bold">3</span>
+<span class="font-caption text-caption text-on-surface-variant font-medium">Requires assessment</span>
+</div>
+<div class="mt-space-xs w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-1/2 rounded-full"></div>
+</div>
+</div>
+<!-- Stat 4 (Staff Policy Card) -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-secondary font-medium uppercase tracking-wider">In-House Staff (5)</span>
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">badge</span>
+</div>
+</div>
+<div class="mt-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">5 Active</span>
+<span class="text-caption font-caption bg-secondary-fixed text-on-secondary-fixed px-2 py-0.5 rounded-full">Own Core</span>
+</div>
+<p class="font-caption text-caption text-secondary mt-1 leading-snug">
+          Suresh, Deepa, Rahul, Vijayan, Mini. <strong class="text-on-surface font-medium">Policy:</strong> Own teams fulfill first, 3rd party for overflow.
+        </p>
+</div>
+<div class="flex items-center gap-1 mt-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary-container" title="Suresh (Ready)"></span>
+<span class="w-2 h-2 rounded-full bg-primary-container" title="Deepa (Dispatched)"></span>
+<span class="w-2 h-2 rounded-full bg-primary-container" title="Rahul (Dispatched)"></span>
+<span class="w-2 h-2 rounded-full bg-primary-container" title="Vijayan (Transit)"></span>
+<span class="w-2 h-2 rounded-full bg-primary-container" title="Mini (Ready)"></span>
+<span class="font-caption text-caption text-on-surface-variant ml-2 font-medium">5/5 Staff on roster</span>
+</div>
+</div>
+</div>
+<!-- Main Split Canvas: Left Queue & Right Dispatch Drawer -->
+<div class="px-gutter pb-gutter grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Left Section: Real-time Booking Queue (Columns: 7 on desktop) -->
+<div class="lg:col-span-7 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm">
+<div class="flex flex-wrap items-center justify-between gap-space-sm mb-space-md">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Real-time Dispatch Queue</h2>
+<p class="font-body-md text-body-md text-secondary">Active service requests across Kozhikode municipal sectors</p>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="bg-surface-container-low px-3 py-1.5 rounded-lg font-label-md text-label-md text-on-surface font-semibold hover:bg-surface-container transition-colors">
+              Filter: All Zones
+            </button>
+<button class="bg-primary-container text-on-surface font-semibold px-3 py-1.5 rounded-lg font-label-md text-label-md flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">sync</span> Refresh
+            </button>
+</div>
+</div>
+<!-- Table Wrapper -->
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low/60 text-secondary font-label-md text-label-md uppercase tracking-wider">
+<th class="py-space-sm px-space-md rounded-l-lg">ID &amp; Client</th>
+<th class="py-space-sm px-space-md">Service &amp; Sector</th>
+<th class="py-space-sm px-space-md">Scheduled</th>
+<th class="py-space-sm px-space-md">Team / State</th>
+<th class="py-space-sm px-space-md rounded-r-lg text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low" id="orderQueueTable">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors cursor-pointer" onclick="selectBooking('KUM-8492', 'Anjali Nair', 'Cleaning + Laundry', 'Mavoor Rd', '9:00 AM', 'In Progress', 'In-house', ['Rahul', 'Deepa'], 6400, 'In Progress', 'Processing')">
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">#KUM-8492</span>
+<span class="font-body-md text-body-md text-secondary">Anjali Nair</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Cleaning + Laundry</span>
+<span class="font-caption text-caption text-secondary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Mavoor Rd
+                    </span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="font-label-md text-label-md text-on-surface font-medium">9:00 AM</span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 bg-surface-container text-on-surface font-label-md text-label-md px-2 py-0.5 rounded-full w-max">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> In Progress
+                    </span>
+<span class="font-caption text-caption text-secondary">In-house (Rahul, Deepa)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="bg-surface-container-low text-on-surface hover:bg-primary-container px-3 py-1.5 rounded-lg font-label-md text-label-md transition-colors">
+                    Dispatch Drawer
+                  </button>
+</td>
+</tr>
+<!-- Row 2 (Primary Focus in prompt) -->
+<tr class="bg-primary-container/15 hover:bg-primary-container/25 transition-colors cursor-pointer" onclick="selectBooking('KUM-8501', 'Dr. Haridas', '3 BHK Deep Cleaning', 'Palazhi', '11:30 AM', 'Awaiting Quote', 'Unassigned', [], 5000, 'Requested', 'Pickup Scheduled')">
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<div class="flex items-center gap-1">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">#KUM-8501</span>
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+</div>
+<span class="font-body-md text-body-md text-secondary">Dr. Haridas</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">3 BHK Cleaning</span>
+<span class="font-caption text-caption text-secondary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Palazhi
+                    </span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="font-label-md text-label-md text-on-surface font-medium">11:30 AM</span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 bg-primary-container text-on-surface font-label-md text-label-md px-2 py-0.5 rounded-full font-semibold w-max">
+                      Awaiting Quote
+                    </span>
+<span class="font-caption text-caption text-error font-medium">Unassigned</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="bg-primary-container text-on-surface hover:bg-primary-fixed-dim px-3 py-1.5 rounded-lg font-label-md text-label-md font-semibold transition-colors shadow-sm">
+                    Prepare Quote
+                  </button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors cursor-pointer" onclick="selectBooking('KUM-8504', 'Fahad K.', 'Laundry (Wash &amp; Fold)', 'Calicut Beach', '2:00 PM', 'Pickup Scheduled', 'In-house', ['Vijayan'], 850, 'Completed', 'Pickup Scheduled')">
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">#KUM-8504</span>
+<span class="font-body-md text-body-md text-secondary">Fahad K.</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Wash &amp; Fold (8 kg)</span>
+<span class="font-caption text-caption text-secondary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Calicut Beach
+                    </span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="font-label-md text-label-md text-on-surface font-medium">2:00 PM</span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 bg-surface-container text-on-surface font-label-md text-label-md px-2 py-0.5 rounded-full w-max">
+                      Pickup Scheduled
+                    </span>
+<span class="font-caption text-caption text-secondary">In-house (Vijayan)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="bg-surface-container-low text-on-surface hover:bg-primary-container px-3 py-1.5 rounded-lg font-label-md text-label-md transition-colors">
+                    Manage
+                  </button>
+</td>
+</tr>
+<!-- Row 4 (Overflow Partner) -->
+<tr class="hover:bg-surface-container-low/40 transition-colors cursor-pointer" onclick="selectBooking('KUM-8488', 'Meera P.', 'Home Cleaning', 'Thondayad', '3:30 PM', 'Overflow', 'Partner', ['Malabar Care Service'], 4200, 'Assigned', 'Pickup Scheduled')">
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">#KUM-8488</span>
+<span class="font-body-md text-body-md text-secondary">Meera P.</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Home Cleaning</span>
+<span class="font-caption text-caption text-secondary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Thondayad
+                    </span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="font-label-md text-label-md text-on-surface font-medium">3:30 PM</span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed font-label-md text-label-md px-2 py-0.5 rounded-full w-max font-medium">
+                      Overflow Partner
+                    </span>
+<span class="font-caption text-caption text-secondary">Malabar Care (Third Party)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="bg-surface-container-low text-on-surface hover:bg-primary-container px-3 py-1.5 rounded-lg font-label-md text-label-md transition-colors">
+                    Review
+                  </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Clean Calicut Interior Aesthetic Snapshot -->
+<div class="mt-space-lg pt-space-md bg-surface-container-low/40 p-space-md rounded-xl flex items-center gap-space-md">
+<div class="w-20 h-20 rounded-xl overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Immaculate modern sunlit living room in Kozhikode Kerala featuring minimal teak furniture, pristine white curtains, light wood flooring, and fresh monstera indoor plant illustrating Klean Ur Mind professional cleaning standards" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC91gRLptcCV4EFkc0yHc3QsSqQQHfmNZC4B8IA8rBf6Lx8Fh5GI0NVLDf_l9PftW0VEUOnx1_Y_q4yfR04cMzZCL7jhihLcdw7Bl4IoutQI5xIamxrr1NNI3Mn6s2YRDur-t5uhLZKb3lfrB92rZJA5cj5kCGXtTcMHdhq1cI17FOzwrhsEkBmKaJMV6FMYEkA6r0j4KIVwCpwDj-jagTHcjRX04efOVOI1lXLfC85XwEBeZINlFBw"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Kozhikode Quality Guarantee</span>
+<p class="font-caption text-caption text-secondary mt-0.5">
+              Standardized inspection checklist applied for all Mavoor Rd, Palazhi, and Beach road residencies. All linen and cleaning chemicals meet organic VOC-free specs.
+            </p>
+</div>
+</div>
+</div>
+<!-- Quick Operations Reference Card -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[24px]">verified_user</span>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface font-bold">Kozhikode In-House Fleet Policy</p>
+<p class="font-caption text-caption text-secondary">Always allocate Suresh, Deepa, Rahul, Vijayan, Mini prior to opening external dispatch vendor lines.</p>
+</div>
+</div>
+<span class="font-label-md text-label-md bg-primary-container px-space-sm py-1 rounded-full text-on-surface font-semibold">Verified</span>
+</div>
+</div>
+<!-- Right Section: Dispatch & Quote Drawer (Columns: 5 on desktop) -->
+<div class="lg:col-span-5 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col gap-space-lg relative">
+<!-- Drawer Header with Active Order Indicator -->
+<div class="flex items-center justify-between pb-space-sm border-b border-surface-container-low">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center font-bold text-on-surface">
+<span class="material-symbols-outlined text-[20px]">assignment</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold" id="drawerOrderId">#KUM-8501</h3>
+<p class="font-caption text-caption text-secondary" id="drawerCustomerName">Dr. Haridas — Palazhi (11:30 AM)</p>
+</div>
+</div>
+<span class="font-label-md text-label-md bg-primary-container px-space-sm py-1 rounded-full text-on-surface font-semibold" id="drawerCurrentStatus">
+          Awaiting Quote
+        </span>
+</div>
+<!-- Part 1: Quote Preparation Module -->
+<div class="flex flex-col gap-space-sm bg-surface-container-low/50 p-space-md rounded-xl">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">Quote Calculator</span>
+<span class="font-caption text-caption text-secondary">3 BHK Living &amp; Bed</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<div>
+<label class="font-caption text-caption text-secondary font-medium block mb-1">Base Cleaning (₹ min 5,000)</label>
+<div class="relative">
+<span class="absolute left-3 top-2.5 font-label-md text-label-md text-secondary">₹</span>
+<input class="w-full pl-7 pr-3 py-2 bg-surface-container-lowest rounded-xl font-label-md text-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container" id="baseCleaningInput" min="5000" oninput="calculateTotalQuote()" step="250" type="number" value="5000"/>
+</div>
+</div>
+<div>
+<label class="font-caption text-caption text-secondary font-medium block mb-1">Condition Add-on</label>
+<select class="w-full px-3 py-2 bg-surface-container-lowest rounded-xl font-label-md text-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container" id="conditionAddonSelect" onchange="calculateTotalQuote()">
+<option value="0">Standard (Nil)</option>
+<option value="750">Deep Kitchen Degrease (+₹750)</option>
+<option value="1200">Post-Monsoon Mold Treatment (+₹1,200)</option>
+<option value="1800">Balcony Pressure Wash (+₹1,800)</option>
+</select>
+</div>
+</div>
+<div class="mt-2 pt-2 border-t border-surface-container">
+<label class="font-caption text-caption text-secondary font-medium block mb-1">Laundry Add-on (Rate Card)</label>
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<input class="w-4 h-4 rounded text-primary focus:ring-0" id="addLaundryCheck" onchange="calculateTotalQuote()" type="checkbox"/>
+<span class="font-label-md text-label-md text-on-surface">Curtains &amp; Linens</span>
+</div>
+<span class="font-label-md text-label-md text-secondary" id="laundrySubtotalDisplay">+₹0</span>
+</div>
+</div>
+<div class="mt-2 bg-surface-container-lowest p-space-sm rounded-xl flex items-center justify-between">
+<span class="font-label-md text-label-md text-secondary font-medium">Estimated Client Total</span>
+<span class="font-title-md text-title-md text-on-surface font-bold" id="totalQuotePriceDisplay">₹5,000</span>
+</div>
+<button class="w-full mt-1 bg-surface-container hover:bg-primary-container text-on-surface py-2 rounded-xl font-label-lg text-label-lg font-semibold flex items-center justify-center gap-space-xs transition-colors shadow-sm" onclick="sendQuoteToClient()">
+<span class="material-symbols-outlined text-[18px]">send</span>
+<span>Send Quote to Customer</span>
+</button>
+</div>
+<!-- Part 2: Staff Assignment Control -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<label class="font-label-lg text-label-lg text-on-surface font-bold">Staff Allocation</label>
+<span class="font-caption text-caption text-secondary">Priority: Core First</span>
+</div>
+<!-- Toggle Tabs -->
+<div class="grid grid-cols-2 p-1 bg-surface-container-low rounded-xl">
+<button class="py-1.5 font-label-md text-label-md font-bold rounded-lg bg-surface-container-lowest shadow-sm text-on-surface text-center transition-all" id="tabInHouseBtn" onclick="switchStaffTab('inhouse')">
+            In-House Team (5)
+          </button>
+<button class="py-1.5 font-label-md text-label-md font-medium text-secondary hover:text-on-surface text-center rounded-lg transition-all" id="tabThirdPartyBtn" onclick="switchStaffTab('partner')">
+            Approved 3rd Party
+          </button>
+</div>
+<!-- In-House Cleaners Selection (5 named personnel) -->
+<div class="space-y-2 mt-1" id="inHouseStaffList">
+<!-- Suresh -->
+<label class="flex items-center justify-between p-2 rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-center gap-space-xs">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0" name="cleanerStaff" type="checkbox" value="Suresh"/>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Suresh K.</span>
+</div>
+<span class="font-caption text-caption bg-surface-container-lowest px-2 py-0.5 rounded-full text-on-surface font-medium">Available</span>
+</label>
+<!-- Deepa -->
+<label class="flex items-center justify-between p-2 rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-center gap-space-xs">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0" name="cleanerStaff" type="checkbox" value="Deepa"/>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Deepa M.</span>
+</div>
+<span class="font-caption text-caption bg-surface-container-lowest px-2 py-0.5 rounded-full text-on-surface font-medium">Assigned #8492 (Free 11am)</span>
+</label>
+<!-- Rahul -->
+<label class="flex items-center justify-between p-2 rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-center gap-space-xs">
+<input class="w-4 h-4 rounded text-primary focus:ring-0" name="cleanerStaff" type="checkbox" value="Rahul"/>
+<span class="font-label-md text-label-md text-on-surface">Rahul V.</span>
+</div>
+<span class="font-caption text-caption bg-surface-container-lowest px-2 py-0.5 rounded-full text-secondary">At Mavoor Rd</span>
+</label>
+<!-- Vijayan -->
+<label class="flex items-center justify-between p-2 rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-center gap-space-xs">
+<input class="w-4 h-4 rounded text-primary focus:ring-0" name="cleanerStaff" type="checkbox" value="Vijayan"/>
+<span class="font-label-md text-label-md text-on-surface">Vijayan P.</span>
+</div>
+<span class="font-caption text-caption bg-surface-container-lowest px-2 py-0.5 rounded-full text-secondary">Laundry Van (Beach)</span>
+</label>
+<!-- Mini -->
+<label class="flex items-center justify-between p-2 rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-center gap-space-xs">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0" name="cleanerStaff" type="checkbox" value="Mini"/>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Mini Thomas</span>
+</div>
+<span class="font-caption text-caption bg-surface-container-lowest px-2 py-0.5 rounded-full text-on-surface font-medium">Available</span>
+</label>
+</div>
+<!-- 3rd Party Partner Overflow (Hidden by default) -->
+<div class="hidden space-y-2 mt-1" id="partnerStaffList">
+<div class="p-space-sm bg-primary-container/20 rounded-xl">
+<p class="font-caption text-caption text-on-surface font-medium">
+              Notice: External partner rates apply standard overflow markup. In-house staff are prioritized.
+            </p>
+</div>
+<label class="flex items-center justify-between p-2 rounded-xl bg-surface-container-low cursor-pointer">
+<div class="flex items-center gap-space-xs">
+<input class="w-4 h-4 text-primary" name="partnerSelect" type="radio" value="Malabar Care"/>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Malabar Care Services (Palazhi)</span>
+</div>
+<span class="font-caption text-caption bg-surface-container-lowest px-2 py-0.5 rounded-full text-secondary">Verified Partner</span>
+</label>
+<label class="flex items-center justify-between p-2 rounded-xl bg-surface-container-low cursor-pointer">
+<div class="flex items-center gap-space-xs">
+<input class="w-4 h-4 text-primary" name="partnerSelect" type="radio" value="Calicut Prime Clean"/>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Calicut Prime Clean Team</span>
+</div>
+<span class="font-caption text-caption bg-surface-container-lowest px-2 py-0.5 rounded-full text-secondary">Standby</span>
+</label>
+</div>
+</div>
+<!-- Part 3: Independent Status Updaters -->
+<div class="flex flex-col gap-space-sm pt-space-xs border-t border-surface-container-low">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">Independent Stage Progression</span>
+<div class="grid grid-cols-2 gap-space-sm">
+<div>
+<label class="font-caption text-caption text-secondary font-medium block mb-1">Cleaning Stage</label>
+<select class="w-full px-3 py-2 bg-surface-container-low rounded-xl font-label-md text-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container" id="cleaningStatusSelect">
+<option value="Requested">Requested</option>
+<option value="Confirmed">Confirmed</option>
+<option selected="" value="Assigned">Assigned</option>
+<option value="In Progress">In Progress</option>
+<option value="Completed">Completed</option>
+</select>
+</div>
+<div>
+<label class="font-caption text-caption text-secondary font-medium block mb-1">Laundry Track</label>
+<select class="w-full px-3 py-2 bg-surface-container-low rounded-xl font-label-md text-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container" id="laundryStatusSelect">
+<option selected="" value="Pickup Scheduled">Pickup Scheduled</option>
+<option value="Collected">Collected</option>
+<option value="Processing">Processing</option>
+<option value="Out for Delivery">Out for Delivery</option>
+<option value="Delivered">Delivered</option>
+</select>
+</div>
+</div>
+<button class="w-full mt-2 bg-primary-container text-on-surface hover:bg-primary-fixed-dim py-3 rounded-xl font-label-lg text-label-lg font-bold flex items-center justify-center gap-space-xs transition-colors shadow-sm" onclick="saveDispatchUpdates()">
+<span class="material-symbols-outlined text-[20px]">save</span>
+<span>Save &amp; Update Dispatch Track</span>
+</button>
+</div>
+<!-- Toast Feedback Popup -->
+<div class="hidden absolute top-4 left-4 right-4 bg-on-surface text-surface-container-lowest p-space-md rounded-xl shadow-xl flex items-center justify-between z-30 transition-all duration-300" id="liveDispatchToast">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary-container text-[22px]">check_circle</span>
+<div>
+<p class="font-label-md text-label-md font-bold" id="toastTitle">Dispatch Sync Successful</p>
+<p class="font-caption text-caption text-surface-container-highest" id="toastMessage">Updates saved to Kozhikode floor manifest.</p>
+</div>
+</div>
+<button class="text-surface-container-highest hover:text-surface-container-lowest" onclick="hideToast()">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Operational Quick Broadcast / Team Ping Modal -->
+<div class="hidden fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-gutter" id="broadcastModal">
+<div class="bg-surface-container-lowest w-full max-w-md p-space-lg rounded-xl shadow-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[24px]">campaign</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Kozhikode Team Broadcast</h3>
+</div>
+<button class="text-secondary hover:text-on-surface" onclick="toggleQuickBroadcastModal()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-secondary">
+        Direct SMS &amp; WhatsApp push to in-house mobile units (Suresh, Deepa, Rahul, Vijayan, Mini).
+      </p>
+<textarea class="w-full p-space-sm bg-surface-container-low rounded-xl font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container" id="broadcastText" placeholder="e.g. Torrential rain warning in Mavoor Rd sector. Use waterproof laundry wrapping." rows="3"></textarea>
+<div class="flex items-center justify-end gap-space-sm">
+<button class="px-space-md py-2 bg-surface-container-low rounded-xl font-label-md text-label-md text-secondary" onclick="toggleQuickBroadcastModal()">Cancel</button>
+<button class="px-space-md py-2 bg-primary-container text-on-surface font-semibold rounded-xl font-label-md text-label-md shadow-sm" onclick="dispatchBroadcastMessage()">Send Dispatch Ping</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple state calculation
+  function calculateTotalQuote() {
+    const base = parseFloat(document.getElementById('baseCleaningInput').value) || 5000;
+    const addon = parseFloat(document.getElementById('conditionAddonSelect').value) || 0;
+    const laundryChecked = document.getElementById('addLaundryCheck').checked;
+    const laundryCost = laundryChecked ? 1200 : 0;
+
+    document.getElementById('laundrySubtotalDisplay').textContent = laundryChecked ? '+₹1,200' : '+₹0';
+    const total = base + addon + laundryCost;
+    document.getElementById('totalQuotePriceDisplay').textContent = '₹' + total.toLocaleString('en-IN');
+  }
+
+  function selectBooking(id, customer, service, area, time, status, teamType, staffArray, totalCost, cleanStatus, laundryStatus) {
+    document.getElementById('drawerOrderId').textContent = '#' + id;
+    document.getElementById('drawerCustomerName').textContent = customer + ' — ' + area + ' (' + time + ')';
+    document.getElementById('drawerCurrentStatus').textContent = status;
+    document.getElementById('baseCleaningInput').value = totalCost >= 5000 ? totalCost : 5000;
+    document.getElementById('cleaningStatusSelect').value = cleanStatus || 'Assigned';
+    document.getElementById('laundryStatusSelect').value = laundryStatus || 'Pickup Scheduled';
+
+    if (teamType === 'Partner') {
+      switchStaffTab('partner');
+    } else {
+      switchStaffTab('inhouse');
+      // Set checks
+      const checks = document.querySelectorAll('input[name="cleanerStaff"]');
+      checks.forEach(c => {
+        c.checked = staffArray.includes(c.value);
+      });
+    }
+
+    calculateTotalQuote();
+    showToast('Loaded ' + id, 'Active record for ' + customer + ' primed in editor.');
+  }
+
+  function switchStaffTab(type) {
+    const inHouseList = document.getElementById('inHouseStaffList');
+    const partnerList = document.getElementById('partnerStaffList');
+    const tabInHouseBtn = document.getElementById('tabInHouseBtn');
+    const tabThirdPartyBtn = document.getElementById('tabThirdPartyBtn');
+
+    if (type === 'inhouse') {
+      inHouseList.classList.remove('hidden');
+      partnerList.classList.add('hidden');
+      tabInHouseBtn.className = 'py-1.5 font-label-md text-label-md font-bold rounded-lg bg-surface-container-lowest shadow-sm text-on-surface text-center transition-all';
+      tabThirdPartyBtn.className = 'py-1.5 font-label-md text-label-md font-medium text-secondary hover:text-on-surface text-center rounded-lg transition-all';
+    } else {
+      inHouseList.classList.add('hidden');
+      partnerList.classList.remove('hidden');
+      tabThirdPartyBtn.className = 'py-1.5 font-label-md text-label-md font-bold rounded-lg bg-surface-container-lowest shadow-sm text-on-surface text-center transition-all';
+      tabInHouseBtn.className = 'py-1.5 font-label-md text-label-md font-medium text-secondary hover:text-on-surface text-center rounded-lg transition-all';
+    }
+  }
+
+  function sendQuoteToClient() {
+    const orderId = document.getElementById('drawerOrderId').textContent;
+    const client = document.getElementById('drawerCustomerName').textContent.split('—')[0].trim();
+    const total = document.getElementById('totalQuotePriceDisplay').textContent;
+    showToast('Quote Transmitted', 'Sent quote of ' + total + ' to ' + client + ' for ' + orderId + ' via SMS.');
+  }
+
+  function saveDispatchUpdates() {
+    const orderId = document.getElementById('drawerOrderId').textContent;
+    const cleanStatus = document.getElementById('cleaningStatusSelect').value;
+    const laundryStatus = document.getElementById('laundryStatusSelect').value;
+    showToast('Dispatch Record Saved', orderId + ' updated -> Clean: ' + cleanStatus + ' | Laundry: ' + laundryStatus);
+  }
+
+  function toggleQuickBroadcastModal() {
+    const modal = document.getElementById('broadcastModal');
+    modal.classList.toggle('hidden');
+  }
+
+  function dispatchBroadcastMessage() {
+    const text = document.getElementById('broadcastText').value.trim();
+    if (!text) {
+      alert('Please enter a note for the Kozhikode team.');
+      return;
+    }
+    toggleQuickBroadcastModal();
+    document.getElementById('broadcastText').value = '';
+    showToast('Broadcast Dispatched', 'All 5 in-house technicians pinged via WhatsApp & SMS.');
+  }
+
+  function showToast(title, msg) {
+    const toast = document.getElementById('liveDispatchToast');
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastMessage').textContent = msg;
+    toast.classList.remove('hidden');
+    clearTimeout(window._toastTimeout);
+    window._toastTimeout = setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 4500);
+  }
+
+  function hideToast() {
+    document.getElementById('liveDispatchToast').classList.add('hidden');
+  }
+
+  // Initial calculation trigger
+  calculateTotalQuote();
+</script></main></div></body></html>

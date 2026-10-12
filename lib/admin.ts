@@ -1,0 +1,24 @@
+import { z } from 'zod';
+import { serial } from './db';
+import { type Actor, requireAdmin, DomainError, cleaningSteps, laundrySteps } from './domain';
+export async function configure(actor:Actor,input:unknown){requireAdmin(actor);const v=z.discriminatedUnion('kind',[
+ z.object({kind:z.literal('area'),name:z.string().trim().min(2).max(100),active:z.boolean()}),
+ z.object({kind:z.literal('provider'),name:z.string().trim().min(2).max(100),approved:z.boolean(),id:z.string().optional()}),
+ z.object({kind:z.literal('availability'),staffId:z.string(),start:z.string().datetime({offset:true}),end:z.string().datetime({offset:true}),type:z.enum(['WORK','LEAVE'])}),
+ z.object({kind:z.literal('catalogue'),serviceId:z.string(),inclusions:z.string().min(5).max(3000),exclusions:z.string().min(5).max(3000),amountPaise:z.number().int().positive().nullable()}),
+ z.object({kind:z.literal('tax'),bps:z.number().int().min(0).max(10000).nullable()}),
+ z.object({kind:z.literal('support'),id:z.string(),response:z.string().trim().min(5).max(2000)}),
+ z.object({kind:z.literal('settlement'),id:z.string(),amountPaise:z.number().int().min(0)}),
+ z.object({kind:z.literal('resolve'),orderId:z.string(),track:z.enum(['cleaning','laundry']),status:z.string(),reason:z.string().min(5).max(500)})
+ ]).parse(input);return serial(async tx=>{
+ let id='configuration';
+ if(v.kind==='area'){const city=await tx.city.upsert({where:{name:'Kozhikode'},update:{},create:{name:'Kozhikode'}});const row=await tx.serviceArea.upsert({where:{cityId_name:{cityId:city.id,name:v.name}},update:{active:v.active},create:{cityId:city.id,name:v.name,active:v.active}});id=row.id;}
+ if(v.kind==='provider'){const row=v.id?await tx.thirdPartyProvider.update({where:{id:v.id},data:{name:v.name,approved:v.approved}}):await tx.thirdPartyProvider.create({data:{name:v.name,approved:v.approved}});id=row.id;}
+ if(v.kind==='availability'){if(new Date(v.end)<=new Date(v.start))throw new DomainError('End must follow start.');const staff=await tx.user.findUnique({where:{id:v.staffId}});if(!staff||['CUSTOMER','ADMIN'].includes(staff.role))throw new DomainError('Choose a staff member.');if(v.type==='LEAVE'&&await tx.assignment.findFirst({where:{staffId:v.staffId,active:true,start:{lt:new Date(v.end)},busyUntil:{gt:new Date(v.start)}}}))throw new DomainError('Reassign confirmed work before adding leave.',409);id=(await tx.staffAvailability.create({data:{staffId:v.staffId,start:new Date(v.start),end:new Date(v.end),kind:v.type}})).id;}
+ if(v.kind==='catalogue'){await tx.service.update({where:{id:v.serviceId},data:{inclusions:v.inclusions,exclusions:v.exclusions,prices:{create:{amountPaise:v.amountPaise,note:'Administrator configuration'}}}});id=v.serviceId;}
+ if(v.kind==='tax'){if(v.bps===null)await tx.setting.deleteMany({where:{key:'taxBps'}});else await tx.setting.upsert({where:{key:'taxBps'},update:{value:String(v.bps)},create:{key:'taxBps',value:String(v.bps)}});}
+ if(v.kind==='support'){await tx.supportRequest.update({where:{id:v.id},data:{status:'RESOLVED',response:v.response}});id=v.id;}
+ if(v.kind==='settlement'){const assignment=await tx.assignment.findUnique({where:{id:v.id}});if(!assignment?.providerId||assignment.vendorCostPaise===null||v.amountPaise>assignment.vendorCostPaise)throw new DomainError('Settlement cannot exceed the agreed vendor cost.');await tx.assignment.update({where:{id:v.id},data:{settledPaise:v.amountPaise}});id=v.id;}
+ if(v.kind==='resolve'){const job=v.track==='cleaning'?await tx.cleaningJob.findUnique({where:{orderId:v.orderId}}):await tx.laundryJob.findUnique({where:{orderId:v.orderId}});if(job?.status!=='ISSUE')throw new DomainError('Only flagged issues can be resolved.');const events=await tx.statusEvent.findMany({where:{orderId:v.orderId,track:v.track.toUpperCase(),status:{not:'ISSUE'}},orderBy:{createdAt:'desc'},take:1});const safe=events[0]?.status;const steps:readonly string[]=v.track==='cleaning'?cleaningSteps:laundrySteps;if(v.status!==safe||!steps.includes(v.status))throw new DomainError(`Resume the previous state: ${safe??'needs review'}.`);if(v.track==='cleaning')await tx.cleaningJob.update({where:{id:job.id},data:{status:v.status as typeof cleaningSteps[number]}});else await tx.laundryJob.update({where:{id:job.id},data:{status:v.status as typeof laundrySteps[number]}});await tx.statusEvent.create({data:{orderId:v.orderId,track:v.track.toUpperCase(),status:v.status,note:v.reason}});id=job.id;}
+ await tx.auditEvent.create({data:{actorId:actor.id,action:`ADMIN_${v.kind.toUpperCase()}`,entityId:id,metadata:{}}});return {id};
+ });}

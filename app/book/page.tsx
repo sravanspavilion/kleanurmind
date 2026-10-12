@@ -1,0 +1,6 @@
+import { Suspense } from 'react';
+import { BookingForm } from '@/components/booking-form';
+import { currentUser } from '@/lib/auth';
+import { db } from '@/lib/db';
+export const dynamic='force-dynamic';
+export default async function Page({searchParams}:{searchParams:Promise<{again?:string}>}){let user=null;try{user=await currentUser();}catch{}const {again}=await searchParams;let repeat=null;if(again&&user)repeat=await db.order.findFirst({where:{id:again,userId:user.id},include:{address:true,items:{include:{service:true}}}});return <div className="container page"><div className="page-title"><div className="eyebrow">Klean Ur Mind services / Booking desk</div><h1>Schedule Your Service</h1><p>Configure home care, laundry pickup, or a coordinated combined visit in Kozhikode.</p></div><Suspense fallback={<p>Loading booking form…</p>}><BookingForm contact={user?.email??null} repeat={repeat?{name:repeat.customerName,locality:repeat.address.locality,fullAddress:repeat.address.fullAddress,landmark:repeat.address.landmark??'',accessContact:repeat.address.accessContact,floorLift:repeat.address.floorLift,utilities:repeat.address.utilities,service:repeat.items.length===2?'BOTH':repeat.items[0].service.code,cleaning:repeat.items.find(i=>i.service.code==='CLEANING')?.details,laundry:repeat.items.find(i=>i.service.code==='LAUNDRY')?.details}:undefined}/></Suspense></div>;}

@@ -1,0 +1,388 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+enum Role {
+  CUSTOMER
+  ADMIN
+  CLEANER
+  LAUNDRY
+  DELIVERY
+  PARTNER
+}
+enum OrderStatus {
+  REQUESTED
+  QUOTED
+  APPROVED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+enum CleaningStatus {
+  REQUESTED
+  CONFIRMED
+  ASSIGNED
+  ON_THE_WAY
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  ISSUE
+}
+enum LaundryStatus {
+  REQUESTED
+  PICKUP_SCHEDULED
+  COLLECTED
+  AWAITING_PRICE_APPROVAL
+  PROCESSING
+  QUALITY_CHECKED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  ISSUE
+}
+enum AppointmentKind {
+  CLEANING
+  PICKUP
+  RETURN
+}
+model User {
+  id                String @id @default(cuid())
+  name              String?
+  email             String? @unique
+  emailVerified     DateTime?
+  image             String?
+  phone             String? @unique
+  role              Role @default(CUSTOMER)
+  active            Boolean @default(true)
+  providerId        String?
+  provider          ThirdPartyProvider? @relation(fields: [providerId], references: [id])
+  accounts          Account[]
+  sessions          Session[]
+  profile           CustomerProfile?
+  orders            Order[]
+  assignments       Assignment[]
+  availability      StaffAvailability[]
+  audits            AuditEvent[]
+  supports          SupportRequest[]
+  uploads           Upload[]
+  notificationPrefs NotificationPreference?
+}
+model Account {
+  id                String @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+model Session {
+  id        String @id @default(cuid())
+  sessionToken String @unique
+  userId    String
+  expires   DateTime
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+model VerificationToken {
+  identifier String
+  token      String @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+model CustomerProfile {
+  id        String @id @default(cuid())
+  userId    String @unique
+  user      User @relation(fields: [userId], references: [id])
+  addresses Address[]
+}
+model Address {
+  id            String @id @default(cuid())
+  profileId     String
+  profile       CustomerProfile @relation(fields: [profileId], references: [id])
+  locality      String
+  fullAddress   String
+  landmark      String?
+  accessContact String
+  floorLift     String
+  utilities     String
+  orders        Order[]
+}
+model City {
+  id    String @id @default(cuid())
+  name  String @unique
+  timezone String @default("Asia/Kolkata")
+  areas ServiceArea[]
+}
+model ServiceArea {
+  id      String @id @default(cuid())
+  cityId  String
+  city    City @relation(fields: [cityId], references: [id])
+  name    String
+  active  Boolean @default(false)
+  @@unique([cityId, name])
+}
+model Service {
+  id          String @id @default(cuid())
+  code        String @unique
+  name        String
+  inclusions  String @default("Scope is confirmed in your itemised quote.")
+  exclusions  String @default("Work outside the approved scope is not included.")
+  prices      PriceVersion[]
+  items       OrderItem[]
+}
+model PriceVersion {
+  id           String @id @default(cuid())
+  serviceId    String
+  service      Service @relation(fields: [serviceId], references: [id])
+  amountPaise  Int?
+  effectiveAt  DateTime @default(now())
+  note         String
+}
+model Order {
+  id            String @id @default(cuid())
+  userId        String
+  user          User @relation(fields: [userId], references: [id])
+  addressId     String
+  address       Address @relation(fields: [addressId], references: [id])
+  customerName  String
+  status        OrderStatus @default(REQUESTED)
+  requestKey    String @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  items         OrderItem[]
+  quotes        Quote[]
+  cleaning      CleaningJob?
+  laundry       LaundryJob?
+  appointments  Appointment[]
+  payments      Payment[]
+  supports      SupportRequest[]
+  events        StatusEvent[]
+  uploads       Upload[]
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+}
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  order     Order @relation(fields: [orderId], references: [id])
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
+  details   Json
+  @@unique([orderId, serviceId])
+}
+model Quote {
+  id                String @id @default(cuid())
+  orderId           String
+  order             Order @relation(fields: [orderId], references: [id])
+  version           Int
+  status            String @default("SENT")
+  totalPaise        Int
+  taxBps            Int?
+  taxPaise          Int @default(0)
+  deliveryPaise     Int
+  inclusions        String
+  exclusions        String
+  appointments      Json
+  laundryWeightGrams Int?
+  createdAt         DateTime @default(now())
+  approvedAt        DateTime?
+  items             QuoteItem[]
+  @@unique([orderId, version])
+}
+model QuoteItem {
+  id          String @id @default(cuid())
+  quoteId     String
+  quote       Quote @relation(fields: [quoteId], references: [id])
+  description String
+  kind        String
+  quantity    Int
+  unitPaise   Int
+  totalPaise  Int
+}
+model CleaningJob {
+  id        String @id @default(cuid())
+  orderId   String @unique
+  order     Order @relation(fields: [orderId], references: [id])
+  status    CleaningStatus @default(REQUESTED)
+  checklist Json @default("[]")
+}
+model LaundryJob {
+  id                  String @id @default(cuid())
+  orderId             String @unique
+  order               Order @relation(fields: [orderId], references: [id])
+  status              LaundryStatus @default(REQUESTED)
+  estimatedWeightGrams Int?
+  actualWeightGrams    Int?
+  bags                LaundryBag[]
+}
+model LaundryBag {
+  id      String @id @default(cuid())
+  jobId   String
+  job     LaundryJob @relation(fields: [jobId], references: [id])
+  label   String @unique
+  handovers Handover[]
+}
+model Handover {
+  id        String @id @default(cuid())
+  bagId     String
+  bag       LaundryBag @relation(fields: [bagId], references: [id])
+  actorId   String
+  note      String
+  createdAt DateTime @default(now())
+}
+model Appointment {
+  id             String @id @default(cuid())
+  orderId        String
+  order          Order @relation(fields: [orderId], references: [id])
+  kind           AppointmentKind
+  requestedStart DateTime
+  requestedEnd   DateTime
+  start          DateTime?
+  end            DateTime?
+  confirmed      Boolean @default(false)
+  assignments    Assignment[]
+  @@unique([orderId, kind])
+  @@index([start, end])
+}
+model Assignment {
+  id                  String @id @default(cuid())
+  appointmentId       String
+  appointment         Appointment @relation(fields: [appointmentId], references: [id])
+  staffId             String
+  staff               User @relation(fields: [staffId], references: [id])
+  start               DateTime
+  end                 DateTime
+  busyUntil           DateTime
+  active              Boolean @default(true)
+  providerId          String?
+  provider            ThirdPartyProvider? @relation(fields: [providerId], references: [id])
+  vendorAcceptedAt    DateTime?
+  vendorCostPaise     Int?
+  promisedCompletion  DateTime?
+  settledPaise        Int @default(0)
+  @@unique([appointmentId, staffId])
+  @@index([staffId, start, busyUntil])
+}
+model StaffAvailability {
+  id        String @id @default(cuid())
+  staffId   String
+  staff     User @relation(fields: [staffId], references: [id])
+  start     DateTime
+  end       DateTime
+  kind      String
+  @@index([staffId, start, end])
+}
+model ThirdPartyProvider {
+  id        String @id @default(cuid())
+  name      String
+  approved  Boolean @default(false)
+  users     User[]
+  assignments Assignment[]
+}
+model StatusEvent {
+  id        String @id @default(cuid())
+  orderId   String
+  order     Order @relation(fields: [orderId], references: [id])
+  track     String
+  status    String
+  note      String?
+  createdAt DateTime @default(now())
+  @@index([orderId, createdAt])
+}
+model Payment {
+  id          String @id @default(cuid())
+  orderId     String
+  order       Order @relation(fields: [orderId], references: [id])
+  provider    String
+  reference   String @unique
+  amountPaise Int
+  status      String
+  createdAt   DateTime @default(now())
+  refunds     Refund[]
+}
+model Refund {
+  id          String @id @default(cuid())
+  paymentId   String
+  payment     Payment @relation(fields: [paymentId], references: [id])
+  amountPaise Int
+  status      String
+  reference   String @unique
+  reason      String
+  createdAt   DateTime @default(now())
+}
+model SupportRequest {
+  id        String @id @default(cuid())
+  orderId   String
+  order     Order @relation(fields: [orderId], references: [id])
+  userId    String
+  user      User @relation(fields: [userId], references: [id])
+  kind      String
+  message   String
+  response  String?
+  status    String @default("OPEN")
+  createdAt DateTime @default(now())
+}
+model AuditEvent {
+  id        String @id @default(cuid())
+  actorId   String
+  actor     User @relation(fields: [actorId], references: [id])
+  action    String
+  entityId  String
+  metadata  Json
+  createdAt DateTime @default(now())
+  @@index([entityId, createdAt])
+}
+model Upload {
+  id          String @id @default(cuid())
+  orderId     String
+  order       Order @relation(fields: [orderId], references: [id])
+  userId      String
+  user        User @relation(fields: [userId], references: [id])
+  storageKey  String @unique
+  mime        String
+  size        Int
+  createdAt   DateTime @default(now())
+}
+model Outbox {
+  id            String @id @default(cuid())
+  dedupeKey     String @unique
+  userId        String
+  kind          String
+  entityId      String
+  status        String @default("PENDING")
+  attempts      Int @default(0)
+  nextAttemptAt DateTime @default(now())
+  lockedUntil   DateTime?
+  lastError     String?
+  createdAt     DateTime @default(now())
+  @@index([status, nextAttemptAt])
+}
+model RateLimit {
+  key       String @id
+  count     Int
+  expiresAt DateTime
+}
+model Setting {
+  key   String @id
+  value String
+}
+model NotificationPreference {
+  id              String @id @default(cuid())
+  userId          String @unique
+  user            User @relation(fields: [userId], references: [id])
+  emailEnabled    Boolean @default(true)
+  smsEnabled      Boolean @default(false)
+  quietHoursStart String? // "22:00"
+  quietHoursEnd   String? // "08:00"
+  updatedAt       DateTime @updatedAt
+}

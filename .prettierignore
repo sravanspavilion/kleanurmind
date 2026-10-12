@@ -1,0 +1,7 @@
+node_modules
+.next
+stitch_klean_ur_mind_prototype
+package-lock.json
+private-uploads
+playwright-report
+test-results
