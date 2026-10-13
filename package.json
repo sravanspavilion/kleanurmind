@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "",
+  "homepage": "https://github.com/sravanspavilion/kleanurmind#readme",
+  "bugs": {
+    "url": "https://github.com/sravanspavilion/kleanurmind/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sravanspavilion/kleanurmind.git"
+  },
   "license": "ISC",
   "author": "",
   "type": "module",

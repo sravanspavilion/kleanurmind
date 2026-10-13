@@ -17,3 +17,9 @@ export const proposedSchema=z.array(z.object({kind:z.enum(['CLEANING','PICKUP','
 export const quoteSchema=z.object({orderId:text,items:z.array(z.object({description:text,kind:z.enum(['CLEANING','LAUNDRY']),quantity:z.number().int().min(1).max(1000),unitPaise:z.number().int().min(1).max(100000000)})).min(1).max(30),deliveryPaise:z.number().int().min(0).max(100000000),inclusions:text,exclusions:text,appointments:proposedSchema});
 export const assignmentSchema=z.object({orderId:text,kind:z.enum(['CLEANING','PICKUP','RETURN']),staffIds:z.array(text).min(1).max(20),start:time,end:time,bufferMinutes:z.number().int().min(0).max(240),vendorCostPaise:z.number().int().min(0).optional(),vendorAccepted:z.boolean().default(false),promisedCompletion:time.optional()}).refine(v=>new Date(v.end)>new Date(v.start),'End must follow start.').refine(v=>new Set(v.staffIds).size===v.staffIds.length,'Duplicate staff.');
 export type BookingInput=z.infer<typeof bookingSchema>;
+export const profileSchema=z.object({
+ name:text.max(100),
+ phone:z.union([z.literal(''),z.string().trim().regex(/^[+]?[0-9 ()\-]{7,20}$/,'Enter a valid mobile number.')]).optional(),
+ locality:optional,fullAddress:optional,landmark:optional,accessContact:optional,floorLift:optional,utilities:optional
+});
+export type ProfileInput=z.infer<typeof profileSchema>;

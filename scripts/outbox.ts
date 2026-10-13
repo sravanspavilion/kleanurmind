@@ -1,5 +1,6 @@
 import { db, serial } from '../lib/db';
 import { sendNotification } from '../lib/providers';
+import { dispatchSheetSync } from '../lib/integrations/google-sheet';
 
 async function main() {
   for (let n = 0; n < 100; n++) {
@@ -24,6 +25,17 @@ async function main() {
     if (!item) break;
 
     try {
+      // Operational records are mirrored to the private Google Sheet; the same
+      // outbox retries these without creating duplicate rows.
+      if (item.kind.startsWith('SHEET_')) {
+        await dispatchSheetSync(item.kind, item.entityId);
+        await db.outbox.update({
+          where: { id: item.id },
+          data: { status: 'DELIVERED', lockedUntil: null, lastError: null },
+        });
+        continue;
+      }
+
       // Fetch user contact info
       const user = await db.user.findUnique({
         where: { id: item.userId },

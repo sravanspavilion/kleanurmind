@@ -1,2 +1,3 @@
 'use client';
-export default function ErrorPage({reset}:{reset:()=>void}){return <div className="container page"><div className="card"><h1>We couldn’t load this page</h1><p>Check the database and authentication configuration, then try again.</p><button className="btn" onClick={reset}>Try again</button></div></div>;}
+import Link from 'next/link';
+export default function ErrorPage({reset}:{reset:()=>void}){return <div className="container page"><div className="card" style={{maxWidth:600,margin:'auto'}}><div className="eyebrow">Something went wrong</div><h1>We couldn’t load this page</h1><p className="muted">This is usually temporary. Please try again — your booking is never lost by a failed page load. If it keeps happening, contact our team and we’ll help you finish what you were doing.</p><div className="actions"><button className="btn" onClick={reset}>Try again</button><Link className="btn secondary" href="/">Back to home</Link></div></div></div>;}

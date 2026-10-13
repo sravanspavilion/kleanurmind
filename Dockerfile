@@ -6,12 +6,12 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml* ./
-RUN npm install -g pnpm && pnpm install --frozen-lockfile --prod=false
+COPY package.json package-lock.json ./
+RUN npm ci --include=dev
 
 # Generate Prisma Client
 COPY prisma ./prisma/
-RUN pnpm exec prisma generate
+RUN npx prisma generate
 
 # Build the application
 FROM base AS builder
