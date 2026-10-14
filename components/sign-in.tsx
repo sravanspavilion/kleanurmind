@@ -13,13 +13,14 @@ function friendlyError(code?: string | null): string {
   return 'We could not sign you in. Please try again.';
 }
 
-export function SignIn({ demo, google, signedIn, callbackUrl, authError }: { demo: boolean; google: boolean; signedIn: boolean; callbackUrl: string; authError?: string }) {
+export function SignIn({ demo, google, email, signedIn, callbackUrl, authError }: { demo: boolean; google: boolean; email: boolean; signedIn: boolean; callbackUrl: string; authError?: string }) {
   const [error, setError] = useState(friendlyError(authError));
   const [busy, setBusy] = useState(false);
   const [register, setRegister] = useState(false);
   const [message, setMessage] = useState('');
+  const [verificationEmail,setVerificationEmail]=useState('');
 
-  if (signedIn) {
+  if (signedIn && !email && !google) {
     return <div className="stack"><p className="muted">You are signed in on this device.</p><Link href="/account" className="btn">Go to your account portal</Link><button className="btn secondary" onClick={() => signOut({ callbackUrl: '/' })}>Sign out</button></div>;
   }
 
@@ -58,6 +59,9 @@ export function SignIn({ demo, google, signedIn, callbackUrl, authError }: { dem
       <button className="btn" disabled={busy}>{busy ? 'Please wait…' : register ? 'Create account' : 'Sign in'}</button>
     </form>
     {message && <p className="success" role="status">{message}</p>}
+    {email && <form onSubmit={async event => {event.preventDefault();setBusy(true);setError('');try {const result=await signIn('email',{email:verificationEmail,callbackUrl,redirect:false});if(result?.error)throw new Error('Unable to send a sign-in email. Please retry.');setMessage('Check your email for a secure sign-in link. This also verifies your email address.');}catch(error){setError(error instanceof Error?error.message:'Please retry.');}finally{setBusy(false);}}}>
+      <Field label="Email for a secure sign-in link"><input type="email" autoComplete="email" required value={verificationEmail} onChange={e=>setVerificationEmail(e.target.value)}/></Field><button className="btn secondary" disabled={busy}>Email me a sign-in link</button>
+    </form>}
     {google && <button className="btn" disabled={busy} onClick={() => { setBusy(true); void signIn('google', { callbackUrl }); }}>{busy ? 'Taking you to Google…' : 'Continue with Google'}</button>}
     {error && <p className="error" role="alert">{error}</p>}
 

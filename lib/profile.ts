@@ -13,7 +13,7 @@ export async function updateProfile(actor: Actor, input: unknown) {
       if (clash) throw new DomainError('That mobile number is already linked to another account.', 409);
     }
 
-    await tx.user.update({ where: { id: actor.id }, data: { name: v.name, phone: phone ?? undefined } });
+    await tx.user.update({ where: { id: actor.id }, data: { name: v.name, phone } });
 
     const profile = await tx.customerProfile.upsert({ where: { userId: actor.id }, update: {}, create: { userId: actor.id } });
     if (v.locality && v.fullAddress) {
@@ -26,7 +26,7 @@ export async function updateProfile(actor: Actor, input: unknown) {
         floorLift: v.floorLift || 'Not specified',
         utilities: v.utilities || 'Not specified',
       };
-      if (existing) await tx.address.update({ where: { id: existing.id }, data });
+      if (existing && !await tx.order.count({ where: { addressId: existing.id } })) await tx.address.update({ where: { id: existing.id }, data });
       else await tx.address.create({ data: { profileId: profile.id, ...data } });
     }
 

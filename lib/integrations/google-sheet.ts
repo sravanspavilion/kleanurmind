@@ -270,8 +270,8 @@ export async function mirrorFollowupToSheetSafely(supportId: string, userId: str
 
 // Used by the outbox cron to replay a queued connector job.
 export async function dispatchSheetSync(kind: string, entityId: string): Promise<void> {
-  if (kind === 'SHEET_BOOKING') return void (await mirrorBookingToSheet(entityId));
-  if (kind === 'SHEET_FOLLOWUP') return void (await mirrorFollowupToSheet(entityId));
+  if (kind === 'SHEET_ORDER' || kind === 'SHEET_BOOKING') return syncOrderSnapshot(entityId);
+  if(kind==='SHEET_FOLLOWUP'){const support=await db.supportRequest.findUniqueOrThrow({where:{id:entityId},select:{orderId:true}});return syncOrderSnapshot(support.orderId);}
   throw new GoogleSheetError(`Unsupported connector sync: ${kind}`, 'UNSUPPORTED');
 }
 
@@ -299,4 +299,25 @@ export async function sheetHealth(): Promise<SheetHealth> {
     const actionSupported = !/unsupported action/i.test(message);
     return { configured: true, reachable, actionSupported, error: message };
   }
+}
+
+// Explicit projection: no credentials, sessions, photos, or provider secrets.
+export async function syncOrderSnapshot(orderId: string): Promise<void> {
+  if (!isGoogleSheetConfigured()) throw new GoogleSheetError('Configure the private Sheets connector before retrying.', 'CONFIGURATION');
+  const order = await db.order.findUniqueOrThrow({where:{id:orderId},include:{
+    address:true,items:{include:{service:true}},cleaning:true,laundry:true,quotes:{include:{items:true}},
+    appointments:{include:{assignments:true}},supports:true,
+  }});
+  const common={bookingId:order.id,customerId:order.userId};
+  const details=(code:string)=>order.items.find(item=>item.service.code===code)?.details;
+  const rows:Record<string,Array<Record<string,unknown>>>={
+    Bookings:[{id:order.id,...common,name:order.customerName,mobile:order.customerPhone,email:order.customerEmail,status:order.status,locality:order.address.locality,address:order.address.fullAddress,landmark:order.address.landmark,accessContact:order.address.accessContact,floorLift:order.address.floorLift,utilities:order.address.utilities,service:order.cleaning&&order.laundry?'BOTH':order.cleaning?'CLEANING':'LAUNDRY',createdAt:order.createdAt}],
+    Cleaning:order.cleaning?[{id:order.cleaning.id,...common,status:order.cleaning.status,details:details('CLEANING')}]:[],
+    Laundry:order.laundry?[{id:order.laundry.id,...common,status:order.laundry.status,estimatedWeightGrams:order.laundry.estimatedWeightGrams,actualWeightGrams:order.laundry.actualWeightGrams,details:details('LAUNDRY')}]:[],
+    Quotes:order.quotes.map(q=>({id:q.id,...common,version:q.version,status:q.status,totalPaise:q.totalPaise,discountPaise:q.discountPaise,taxPaise:q.taxPaise,deliveryPaise:q.deliveryPaise,inclusions:q.inclusions,exclusions:q.exclusions,items:q.items.map(i=>({description:i.description,quantity:i.quantity,unitPaise:i.unitPaise,totalPaise:i.totalPaise})),approvedAt:q.approvedAt,approvedById:q.approvedById})),
+    Appointments:order.appointments.map(a=>({id:a.id,...common,kind:a.kind,confirmed:a.confirmed,requestedStart:toIST(a.requestedStart),requestedEnd:toIST(a.requestedEnd),start:toIST(a.start),end:toIST(a.end)})),
+    'Staff Assignments':order.appointments.flatMap(a=>a.assignments.map(s=>({id:s.id,...common,appointmentId:a.id,staffId:s.staffId,active:s.active,start:toIST(s.start),end:toIST(s.end)}))),
+    'Customer Followups':order.supports.map(s=>({id:s.id,...common,kind:s.kind,message:s.message,status:s.status,response:s.response,createdAt:s.createdAt})),
+  };
+  await callGoogleSheet({action:'syncSnapshot',actor:await systemActor(),data:{bookingId:order.id,rows},requestId:`snapshot:${order.id}:${crypto.randomUUID()}`});
 }

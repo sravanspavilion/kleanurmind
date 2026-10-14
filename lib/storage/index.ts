@@ -16,6 +16,7 @@ export function getStorageProvider(): StorageProvider {
   if (isS3Configured()) {
     storageProvider = s3Storage;
   } else {
+    if(process.env.VERCEL)throw new Error('Private object storage is required on Vercel.');
     storageProvider = localStorage;
   }
   

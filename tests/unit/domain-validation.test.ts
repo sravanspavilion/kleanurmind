@@ -202,6 +202,7 @@ describe('Validation Schemas', () => {
       requestKey: 'a0b1c2d3-e4f5-4789-8123-456789abcdef',
       service: 'CLEANING',
       name: 'Test Customer',
+      phone: '+919876543210',
       locality: 'Mananchira',
       fullAddress: '123 Test Road, Mananchira, Kozhikode',
       landmark: 'Near Test',

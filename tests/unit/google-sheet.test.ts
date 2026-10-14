@@ -1,8 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-vi.mock('@/lib/db', () => ({ db: {} }));
+vi.mock('@/lib/db', () => ({ db: { order: { findUniqueOrThrow: vi.fn() } } }));
+import { db } from '@/lib/db';
 
 import {
+  syncOrderSnapshot,
   buildBookingRequest,
   isGoogleSheetConfigured,
   signSheetRequest,
@@ -133,5 +135,37 @@ describe('Google Sheets connector contracts', () => {
     expect(data.laundry).toMatchObject({ service: 'Wash & Iron', estimatedBags: 2, estimatedKg: 5, collectDuringCleaning: false });
 
     expect(buildBookingRequest({ ...order, user: { email: null, phone: null } } as never)).toBeNull();
+  });
+});
+
+
+describe('complete service request snapshot', () => {
+  it('sends address instructions and all entered service details to Sheets', async () => {
+    vi.stubEnv('GOOGLE_SCRIPT_URL', 'https://example.test/sheet');
+    vi.stubEnv('GOOGLE_SCRIPT_SECRET', 'test-secret');
+    vi.stubEnv('GOOGLE_SCRIPT_ACTOR_EMAIL', 'connector@example.test');
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true, data: {} }) });
+    vi.stubGlobal('fetch', fetchMock);
+    const cleaning = { tasks: 'Clean balcony', notes: 'Bring supplies', area: 'Not sure' };
+    const laundry = { bags: 2, instructions: 'Delicates', returnPreference: 'Evening', collectDuringCleaning: true };
+    vi.mocked(db.order.findUniqueOrThrow).mockResolvedValue({
+      id: 'order-1', userId: 'user-1', customerName: 'Asha', customerPhone: '9000000000', customerEmail: 'asha@example.test', status: 'REQUESTED',
+      address: { locality: 'Kallai', fullAddress: '5 Road', landmark: 'Park', accessContact: 'Asha', floorLift: 'First floor', utilities: 'Available' },
+      items: [{ service: { code: 'CLEANING' }, details: cleaning }, { service: { code: 'LAUNDRY' }, details: laundry }],
+      cleaning: { id: 'clean-1', status: 'REQUESTED' }, laundry: { id: 'laundry-1', status: 'REQUESTED' },
+      quotes: [], appointments: [], supports: [],
+    } as never);
+    try {
+      await syncOrderSnapshot('order-1');
+      const envelope = JSON.parse(fetchMock.mock.calls[0][1].body);
+      const request = JSON.parse(envelope.payload);
+      expect(request.action).toBe('syncSnapshot');
+      expect(request.data.rows.Bookings[0]).toMatchObject({ mobile: '9000000000', service: 'BOTH', accessContact: 'Asha', floorLift: 'First floor', utilities: 'Available', landmark: 'Park' });
+      expect(request.data.rows.Cleaning[0].details).toEqual(cleaning);
+      expect(request.data.rows.Laundry[0].details).toEqual(laundry);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.unstubAllEnvs();
+    }
   });
 });

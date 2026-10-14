@@ -58,7 +58,7 @@ export function ConnectorStatus() {
     }
   };
 
-  if (!state) return <p className="muted">{busy ? 'Checking connector…' : 'Loading connector status…'}</p>;
+  if (!state) return <div>{error?<p className="error" role="alert">{error}</p>:<p className="muted">Loading connector status…</p>}<button className="btn secondary" disabled={busy} onClick={()=>void load()}>Retry status check</button></div>;
 
   const { health } = state;
   const label = !state.configured ? 'Not configured' : health.reachable ? (health.actionSupported ? 'Connected' : 'Connected — health action pending') : 'Unreachable';

@@ -13,11 +13,13 @@ export function transition(track: 'cleaning'|'laundry', from: string, to: string
 export function orderFinished(cleaning?: string|null, laundry?: string|null) { return !!(cleaning || laundry) && (!cleaning || cleaning === 'COMPLETED') && (!laundry || laundry === 'DELIVERED'); }
 export function canRead(actor: Actor, ownerId: string, assignedIds: string[] = []) { return actor.role === 'ADMIN' || (actor.role === 'CUSTOMER' && actor.id === ownerId) || assignedIds.includes(actor.id); }
 export function requireAdmin(actor: Actor) { if(actor.role !== 'ADMIN') throw new DomainError('Administrator access required.',403); }
-export function calculateQuote(items: {quantity:number;unitPaise:number}[], deliveryPaise:number, taxBps:number|null) {
+export function calculateQuote(items: {quantity:number;unitPaise:number}[], deliveryPaise:number, taxBps:number|null, discountPaise=0) {
  if (!items.length || items.some(i=>!Number.isSafeInteger(i.quantity)||i.quantity<1||!Number.isSafeInteger(i.unitPaise)||i.unitPaise<0) || !Number.isSafeInteger(deliveryPaise)||deliveryPaise<0 || (taxBps!==null && (!Number.isInteger(taxBps)||taxBps<0||taxBps>10000))) throw new DomainError('Invalid quote amounts.');
  const subtotal = items.reduce((sum,i)=>sum+i.quantity*i.unitPaise,deliveryPaise);
- const taxPaise = taxBps === null ? 0 : Math.round(subtotal*taxBps/10000);
- const totalPaise = subtotal+taxPaise;
+ if(!Number.isSafeInteger(discountPaise)||discountPaise<0||discountPaise>subtotal)throw new DomainError('Discount exceeds the quote subtotal.');
+ const taxable=subtotal-discountPaise;
+ const taxPaise = taxBps === null ? 0 : Math.round(taxable*taxBps/10000);
+ const totalPaise = taxable+taxPaise;
  if(!Number.isSafeInteger(totalPaise)||totalPaise>2_000_000_000) throw new DomainError('Quote exceeds supported amount.');
  return {subtotal,taxPaise,totalPaise};
 }

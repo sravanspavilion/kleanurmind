@@ -1,65 +1,29 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { randomUUID } from 'crypto';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 import type { StorageProvider } from './s3';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-function getUploadDir(): string {
-  return process.env.UPLOAD_DIR || path.join(__dirname, '../../private-uploads');
+export function getLocalUploadPath(key: string): string {
+  const root = path.resolve(/* turbopackIgnore: true */ process.env.UPLOAD_DIR || path.join(process.cwd(), 'private-uploads'));
+  const publicRoot = path.join(process.cwd(), 'public');
+  if (root === publicRoot || root.startsWith(publicRoot + path.sep)) throw new Error('Upload storage must be private.');
+  if (!key || key.includes('\\') || key.split('/').some(part => !part || part === '.' || part === '..')) throw new Error('Invalid storage key.');
+  const resolved = path.resolve(/* turbopackIgnore: true */ root, key);
+  if (!resolved.startsWith(root + path.sep)) throw new Error('Invalid storage key.');
+  return resolved;
 }
-
 export const localStorage: StorageProvider = {
   async save(key, file) {
-    const uploadDir = getUploadDir();
-    const fullPath = path.join(uploadDir, key);
-    
-    // Ensure directory exists
-    await fs.mkdir(path.dirname(fullPath), { recursive: true });
-    
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    
-    await fs.writeFile(fullPath, buffer);
-    
-    return { url: `/api/uploads/${key}`, size: buffer.length };
+    const target = getLocalUploadPath(key);
+    await fs.mkdir(path.dirname(target), { recursive: true, mode: 0o700 });
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await fs.writeFile(target, buffer, { mode: 0o600, flag: 'wx' });
+    return { url: '', size: buffer.length };
   },
-
-  async getSignedUrl(key, expirySec) {
-    // For local storage, we return a direct URL with a token
-    // In production, you'd want to implement proper signed URLs
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const token = Buffer.from(`${key}:${Date.now() + expirySec * 1000}`).toString('base64');
-    return `${baseUrl}/api/uploads/${key}?token=${token}`;
-  },
-
+  async getSignedUrl() { throw new Error('Local files must be served by the authenticated upload route.'); },
+  async read(key) { return fs.readFile(/* turbopackIgnore: true */ getLocalUploadPath(key)); },
   async delete(key) {
-    const uploadDir = getUploadDir();
-    const fullPath = path.join(uploadDir, key);
-    
-    try {
-      await fs.unlink(fullPath);
-    } catch (error) {
-      // Ignore if file doesn't exist
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        throw error;
-      }
-    }
+    try { await fs.unlink(getLocalUploadPath(key)); }
+    catch(error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
   },
 };
-
-export function getLocalUploadPath(key: string): string {
-  const uploadDir = getUploadDir();
-  return path.join(uploadDir, key);
-}
-
-export async function ensureUploadDir(): Promise<void> {
-  const uploadDir = getUploadDir();
-  await fs.mkdir(uploadDir, { recursive: true });
-}
-
-export function isLocalStorageConfigured(): boolean {
-  return true; // Always available
-}
+export async function ensureUploadDir() { await fs.mkdir(path.dirname(getLocalUploadPath('placeholder')), { recursive: true, mode: 0o700 }); }

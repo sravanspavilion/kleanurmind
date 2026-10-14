@@ -60,9 +60,10 @@ describe('Booking Flow Integration Tests', () => {
 
   it('should create a booking request', async () => {
     const input = {
-      requestKey: `test-${Date.now()}`,
+      requestKey: crypto.randomUUID(),
       service: 'CLEANING',
       name: 'Test Customer',
+      phone: '+919876543210',
       locality: 'Mananchira',
       fullAddress: '123 Test Road, Mananchira, Kozhikode',
       landmark: 'Near Test Landmark',
@@ -95,9 +96,10 @@ describe('Booking Flow Integration Tests', () => {
 
   it('should create a booking request with both services', async () => {
     const input = {
-      requestKey: `test-both-${Date.now()}`,
+      requestKey: crypto.randomUUID(),
       service: 'BOTH',
       name: 'Test Customer',
+      phone: '+919876543210',
       locality: 'Mananchira',
       fullAddress: '123 Test Road, Mananchira, Kozhikode',
       landmark: 'Near Test Landmark',
@@ -135,9 +137,10 @@ describe('Booking Flow Integration Tests', () => {
   it('should allow admin to prepare a quote', async () => {
     // First create an order
     const order = await createOrder(customer, {
-      requestKey: `test-quote-${Date.now()}`,
+      requestKey: crypto.randomUUID(),
       service: 'CLEANING',
       name: 'Test Customer',
+      phone: '+919876543210',
       locality: 'Mananchira',
       fullAddress: '123 Test Road, Mananchira, Kozhikode',
       landmark: 'Near Test Landmark',
@@ -181,9 +184,10 @@ describe('Booking Flow Integration Tests', () => {
   it('should allow customer to approve quote', async () => {
     // Create order and quote
     const order = await createOrder(customer, {
-      requestKey: `test-approve-${Date.now()}`,
+      requestKey: crypto.randomUUID(),
       service: 'CLEANING',
       name: 'Test Customer',
+      phone: '+919876543210',
       locality: 'Mananchira',
       fullAddress: '123 Test Road, Mananchira, Kozhikode',
       landmark: 'Near Test Landmark',
@@ -227,9 +231,10 @@ describe('Booking Flow Integration Tests', () => {
   it('should allow admin to assign staff', async () => {
     // Create order, quote, approve
     const order = await createOrder(customer, {
-      requestKey: `test-assign-${Date.now()}`,
+      requestKey: crypto.randomUUID(),
       service: 'CLEANING',
       name: 'Test Customer',
+      phone: '+919876543210',
       locality: 'Mananchira',
       fullAddress: '123 Test Road, Mananchira, Kozhikode',
       landmark: 'Near Test Landmark',
@@ -304,9 +309,10 @@ describe('Booking Flow Integration Tests', () => {
   it('should update job status through lifecycle', async () => {
     // Setup order with assigned staff
     const order = await createOrder(customer, {
-      requestKey: `test-status-${Date.now()}`,
+      requestKey: crypto.randomUUID(),
       service: 'CLEANING',
       name: 'Test Customer',
+      phone: '+919876543210',
       locality: 'Mananchira',
       fullAddress: '123 Test Road, Mananchira, Kozhikode',
       landmark: 'Near Test Landmark',

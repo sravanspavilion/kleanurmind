@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import sharp, { ResizeOptions } from 'sharp';
 
 export interface StorageProvider {
+  read?(key: string): Promise<Buffer>;
   save(key: string, file: File): Promise<{ url: string; size: number }>;
   getSignedUrl(key: string, expirySec: number): Promise<string>;
   delete(key: string): Promise<void>;

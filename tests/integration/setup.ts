@@ -1,6 +1,8 @@
 import { beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import { execSync } from 'node:child_process';
+const testUrl=process.env.TEST_DATABASE_URL;
+if(!testUrl||!new URL(testUrl).pathname.endsWith('_test'))throw new Error('Integration tests require TEST_DATABASE_URL pointing to a dedicated database ending in _test.');
+process.env.DATABASE_URL=testUrl;
 
 const prisma = new PrismaClient();
 

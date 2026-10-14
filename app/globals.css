@@ -15,3 +15,8 @@
 /* Signed-in client portal access */
 .header-actions{margin-left:auto}.account{display:flex;align-items:center;gap:4px;min-width:0}.account-greeting{max-width:190px}.account-greeting span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-trigger{padding:12px 9px}.account-panel{top:calc(100% + 8px)}
 @media(max-width:640px){.account-greeting{max-width:160px}.header-actions .account-trigger{padding:9px 7px}}
+
+/* Demo controls share the existing palette and responsive page layout. */
+.demo-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 20px; padding: 10px 16px; }
+.demo-banner button { color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 6px; padding: 6px 12px; cursor: pointer; font: inherit; }
+.request-id { overflow-wrap: anywhere; }

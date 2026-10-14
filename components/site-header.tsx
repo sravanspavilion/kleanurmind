@@ -15,7 +15,7 @@ export function isStaffRole(role?: string | null): boolean {
   return !!role && (STAFF_ROLES as readonly string[]).includes(role);
 }
 
-export function SiteHeader({ user }: { user: HeaderUser }) {
+export function SiteHeader({ user, demo = false }: { user: HeaderUser; demo?: boolean }) {
   const path = usePathname() || '/';
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -23,15 +23,25 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
   const isAdmin = user?.role === 'ADMIN';
   const staff = isStaffRole(user?.role);
 
-  const links: Array<{ href: string; label: string }> = [
-    { href: '/', label: 'Home' },
-    { href: '/book', label: 'Book a Service' },
-    ...(user ? [{ href: '/bookings', label: 'My Bookings' }] : []),
-    ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
-    ...(staff ? [{ href: '/staff', label: 'My Jobs' }] : []),
-  ];
+  // The public demo is open to everyone: no sign-in, account menu or admin-only
+  // navigation is shown, and every workspace is reachable directly.
+  const links: Array<{ href: string; label: string }> = demo
+    ? [
+        { href: '/', label: 'Home' },
+        { href: '/book', label: 'Book a Service' },
+        { href: '/bookings', label: 'My Bookings' },
+        { href: '/admin', label: 'Operations' },
+        { href: '/staff', label: 'Staff' },
+      ]
+    : [
+        { href: '/', label: 'Home' },
+        { href: '/book', label: 'Book a Service' },
+        ...(user ? [{ href: '/bookings', label: 'My Bookings' }] : []),
+        ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
+        ...(staff ? [{ href: '/staff', label: 'My Jobs' }] : []),
+      ];
 
-  const signInHref = '/sign-in?callbackUrl=%2Faccount';
+  const signInHref = `/sign-in?callbackUrl=${encodeURIComponent(path.startsWith('/book')?path:'/dashboard')}`;
   const greeting = `Hello, ${user?.name?.trim().split(/\s+/)[0] || 'there'}`;
 
   const navLink = (href: string, label: string, onClick?: () => void) => (
@@ -67,9 +77,11 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
 
         <div className="header-actions">
           <Link href="/book" className="btn primary-action">Book a Service</Link>
-          {user ? (
+          {demo ? (
+            <span className="badge" title="You are exploring fictional sample data">Demo</span>
+          ) : user ? (
             <div className="account">
-              <Link href="/account" className="btn secondary account-greeting" aria-label={`${greeting}. Open your account portal`} onClick={() => { setMenuOpen(false); setAccountOpen(false); }}>
+              <Link href="/dashboard" className="btn secondary account-greeting" aria-label={`${greeting}. Open your account portal`} onClick={() => { setMenuOpen(false); setAccountOpen(false); }}>
                 <span>{greeting}</span>
               </Link>
               <button
@@ -78,13 +90,14 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 aria-expanded={accountOpen}
                 aria-label="Account options"
                 aria-controls="account-options"
+                onKeyDown={event=>{if(event.key==='Escape')setAccountOpen(false);}}
                 onClick={() => setAccountOpen((open) => !open)}
               >
                 <ChevronDown size={16} aria-hidden="true"/>
               </button>
               {accountOpen && (
                 <div id="account-options" className="account-panel" onKeyDown={event => { if (event.key === 'Escape') setAccountOpen(false); }}>
-                  {navLink('/bookings', 'Dashboard', () => setAccountOpen(false))}
+                  {navLink('/dashboard', 'Dashboard', () => setAccountOpen(false))}
                   {navLink('/bookings?tab=upcoming', 'My Bookings', () => setAccountOpen(false))}
                   {navLink('/account', 'Profile', () => setAccountOpen(false))}
                   {isAdmin && navLink('/admin', 'Admin', () => setAccountOpen(false))}
@@ -124,7 +137,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
         <div className="container">
           <nav id="mobile-menu" className="nav mobile-menu" aria-label="Mobile navigation">
             {links.map((link) => navLink(link.href, link.label, () => setMenuOpen(false)))}
-            {user ? (
+            {!demo && (user ? (
               <>
                 {navLink('/account', 'Profile', () => setMenuOpen(false))}
                 <button
@@ -141,7 +154,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
               <Link href={signInHref} onClick={() => setMenuOpen(false)}>
                 Sign in / Create account
               </Link>
-            )}
+            ))}
           </nav>
         </div>
       )}

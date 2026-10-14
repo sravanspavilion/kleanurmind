@@ -4,12 +4,14 @@ import { db } from '@/lib/db';
 import { getStorageProvider, generateStorageKey, optimizeImage } from '@/lib/storage/index';
 import { rateLimit, sameOrigin } from '@/lib/security';
 import { DomainError } from '@/lib/domain';
+import { isDemoMode } from '@/lib/demo/mode';
 
 const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 const MAX_UPLOADS_PER_ORDER = 12;
 
 export async function POST(request: Request) {
+  if (isDemoMode()) return Response.json({ error: 'Photo uploads are disabled in the public demo.' }, { status: 403 });
   try {
     sameOrigin(request);
     const user = await requireUser();
@@ -36,6 +38,9 @@ export async function POST(request: Request) {
       throw new DomainError(`Maximum ${MAX_UPLOADS_PER_ORDER} photos per booking.`);
     }
 
+    // Reject data whose actual file signature does not match an allowed image.
+    const { imageMime } = await import('@/lib/image-mime');
+    imageMime(Buffer.from(await file.arrayBuffer()));
     // Optimize image if it's an image
     let fileToUpload = file;
     if (file.type.startsWith('image/')) {
@@ -47,7 +52,7 @@ export async function POST(request: Request) {
           format: 'webp',
         });
       } catch {
-        // If optimization fails, use original file
+        throw new DomainError('This photo could not be read. Choose a valid JPEG, PNG or WebP image.');
       }
     }
 

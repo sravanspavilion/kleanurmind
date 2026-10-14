@@ -15,4 +15,8 @@ npx prisma db execute --file scripts/sql/add-password-auth.sql --schema prisma/s
 npx prisma generate
 ```
 
+The SQL command can safely be repeated. Run `npm run db:auth:check` to verify the connection and registration tables. `npm run db:auth:setup` applies only the additive password column update; it does not provision a new database.
+
+If registration reports unavailable, check the server log entry `[registration] Account creation failed`. `database_connection` indicates configuration or connectivity; `database_schema` indicates missing tables or columns. Vercel needs a reachable hosted PostgreSQL `DATABASE_URL`; a localhost database URL points at the Vercel instance, not your Mac.
+
 For a new database, provision the full Prisma schema through the project's normal database setup first. Set `NEXTAUTH_URL` to the deployed site URL and configure `NEXTAUTH_SECRET` before using authentication. Publish the code after the database update succeeds.

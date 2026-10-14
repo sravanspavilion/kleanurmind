@@ -155,6 +155,8 @@ model Order {
   user          User @relation(fields: [userId], references: [id])
   addressId     String
   address       Address @relation(fields: [addressId], references: [id])
+  customerPhone String?
+  customerEmail String?
   customerName  String
   status        OrderStatus @default(REQUESTED)
   requestKey    String @unique
@@ -191,6 +193,8 @@ model Quote {
   totalPaise        Int
   taxBps            Int?
   taxPaise          Int @default(0)
+  discountPaise     Int @default(0)
+  approvedById      String?
   deliveryPaise     Int
   inclusions        String
   exclusions        String

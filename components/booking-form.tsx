@@ -4,12 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Brush, WashingMachine, Sparkles, ArrowRight } from 'lucide-react';
 import { bookingSchema } from '@/lib/validation';
-import { localToISO, human } from '@/lib/domain';
+import { localToISO, human, dateTime } from '@/lib/domain';
+import { isDemoMode } from '@/lib/demo/mode';
+import { DEMO_DRAFT_KEY, syncDemoRequest, placeDemoRequest, readDemoRequests, sampleContact, sampleSchedule } from '@/lib/demo/browser-store';
 import { Field, mutate } from './forms';
 
 const initial = {
   service: 'CLEANING',
   name: '',
+  phone: '',
   locality: '',
   fullAddress: '',
   landmark: '',
@@ -40,7 +43,7 @@ const initial = {
 
 type Draft = typeof initial;
 
-export function BookingForm({ contact, repeat }: { contact: string | null; repeat?: Record<string, unknown> }) {
+export function BookingForm({ contact, verified, defaultName='', defaultPhone='', repeat, sheetSync = false }: { sheetSync?: boolean; contact: string | null; verified: boolean; defaultName?: string; defaultPhone?: string; repeat?: Record<string, unknown> }) {
   const search = useSearchParams();
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(initial);
@@ -48,30 +51,65 @@ export function BookingForm({ contact, repeat }: { contact: string | null; repea
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [ready, setReady] = useState(false);
+  const demo = isDemoMode();
+  const [demoDone, setDemoDone] = useState(false);
+  const [storageError, setStorageError] = useState('');
   const key = useRef('');
+  const hydratedIntent = useRef<string | null>(null);
+  const submitting = useRef(false);
   const section = useRef<HTMLDivElement>(null);
   const [photos, setPhotos] = useState<File[]>([]);
 
   useEffect(() => {
-    key.current = crypto.randomUUID();
+    let active = true;
+    queueMicrotask(() => {
+    if (!active) return;
+    hydratedIntent.current = search.toString();
+    if (demo) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(DEMO_DRAFT_KEY) || 'null');
+        const again = search.get('again');
+        const prior = again ? readDemoRequests().find(r => r.id === again) : null;
+        const chosen = search.get('service');
+        const valid = ['CLEANING', 'LAUNDRY', 'BOTH'].includes(chosen ?? '');
+        const explicitStart = search.has('new') || search.has('reset') || !!again || (valid && saved?.intent !== search.toString());
+        const fresh = explicitStart && (saved?.intent !== search.toString() || !!saved?.completedId);
+        const defaults = { ...initial, ...sampleContact, cleaningTime: sampleSchedule(), pickupTime: sampleSchedule(2, '11:00') };
+        const source = prior && fresh ? { ...prior.data, cleaningTime: sampleSchedule(), pickupTime: sampleSchedule(2, '11:00') } : repeat || (!fresh && saved?.draft) || {};
+        const merged = { ...defaults, ...source, ...(valid && (!saved || fresh) ? { service: chosen } : {}) };
+        key.current = !fresh && saved?.key ? saved.key : crypto.randomUUID();
+        setDraft({ ...merged, cleaning: { ...initial.cleaning, ...merged.cleaning }, laundry: { ...initial.laundry, ...merged.laundry } } as Draft);
+        setStep(!fresh && saved ? Math.min(3, Math.max(0, Number(saved.step) || 0)) : 0);
+        if (!fresh && saved?.completedId) {
+          setDemoDone(true);
+          router.replace(`/bookings/${saved.completedId}`);
+        }
+      } catch { setStorageError('Demo storage is unavailable or unreadable. Allow browser storage or use Reset demo data before submitting.'); }
+      setReady(true);
+      return;
+    }
+    try {key.current=sessionStorage.getItem('kum-booking-key')||crypto.randomUUID();sessionStorage.setItem('kum-booking-key',key.current);}catch{key.current=crypto.randomUUID();}
     let saved = {};
-    try {
-      saved = JSON.parse(sessionStorage.getItem('kum-booking-draft') ?? '{}');
-    } catch {}
+    try { saved = JSON.parse(sessionStorage.getItem('kum-booking-draft') ?? '{}'); } catch {}
     const chosen = search.get('service');
     const valid = ['CLEANING', 'LAUNDRY', 'BOTH'].includes(chosen ?? '');
-    const merged = { ...initial, ...saved, ...repeat, ...(valid ? { service: chosen } : {}) };
-    setDraft({
-      ...merged,
-      cleaning: { ...initial.cleaning, ...(merged.cleaning as object) },
-      laundry: { ...initial.laundry, ...(merged.laundry as object) },
-    } as Draft);
+    const merged = { ...initial, name:defaultName, phone:defaultPhone, ...saved, ...repeat, ...(valid ? { service: chosen } : {}) };
+    setDraft({ ...merged, cleaning: { ...initial.cleaning, ...(merged.cleaning as object) }, laundry: { ...initial.laundry, ...(merged.laundry as object) } } as Draft);
+    try {setStep(Math.min(3,Math.max(0,Number(sessionStorage.getItem('kum-booking-step'))||0)));}catch{}
     setReady(true);
-  }, [repeat, search]);
+    });
+    return () => { active = false; };
+  }, [repeat, search, defaultName, defaultPhone, demo, router]);
 
   useEffect(() => {
-    if (ready) sessionStorage.setItem('kum-booking-draft', JSON.stringify(draft));
-  }, [draft, ready]);
+    if (!ready || demoDone || hydratedIntent.current !== search.toString()) return;
+    try {
+      if (demo) localStorage.setItem(DEMO_DRAFT_KEY, JSON.stringify({ draft, step, key: key.current, intent: search.toString() }));
+      else { sessionStorage.setItem('kum-booking-draft', JSON.stringify(draft)); sessionStorage.setItem('kum-booking-step', String(step)); }
+    } catch { queueMicrotask(() => setStorageError('Browser storage is unavailable. Allow site storage to save demo progress and requests.')); }
+  }, [draft, ready, step, demo, demoDone, search]);
+
+  useEffect(() => { if (ready) section.current?.focus(); }, [step, ready]);
 
   function set<K extends keyof Draft>(k: K, v: Draft[K]) {
     setDraft((d) => ({ ...d, [k]: v }));
@@ -96,7 +134,7 @@ export function BookingForm({ contact, repeat }: { contact: string | null; repea
       laundry: washing ? draft.laundry : undefined,
       collectDuringCleaning: draft.service === 'BOTH' && draft.collectDuringCleaning,
       cleaningStart: cleaning && draft.cleaningTime ? localToISO(draft.cleaningTime) : undefined,
-      pickupStart: washing && draft.pickupTime ? localToISO(draft.pickupTime) : undefined,
+      pickupStart: washing && !(draft.service==='BOTH'&&draft.collectDuringCleaning) && draft.pickupTime ? localToISO(draft.pickupTime) : undefined,
     };
   }
 
@@ -107,9 +145,10 @@ export function BookingForm({ contact, repeat }: { contact: string | null; repea
   }
 
   async function handleNext() {
+    if(submitting.current || demoDone || !ready)return;
     setError('');
     if (step === 1) {
-      const required = [draft.name, draft.locality, draft.fullAddress, draft.accessContact, draft.floorLift, draft.utilities];
+      const required = [draft.name, draft.phone, draft.locality, draft.fullAddress, draft.accessContact, draft.floorLift, draft.utilities];
       if (required.some((x) => !x.trim())) {
         setError('Complete all required contact and address fields.');
         return;
@@ -131,10 +170,28 @@ export function BookingForm({ contact, repeat }: { contact: string | null; repea
       move(step + 1);
       return;
     }
-    if (!contact) {
+    if (demo) {
+      submitting.current = true;
+      setBusy(true);
+      try {
+        // Yield a frame so the saving state is announced before navigation.
+        await new Promise(resolve => setTimeout(resolve, 200));
+        const request = placeDemoRequest(payload());
+        if (sheetSync) await syncDemoRequest(request);
+        localStorage.setItem(DEMO_DRAFT_KEY, JSON.stringify({ draft, step, key: key.current, intent: search.toString(), completedId: request.id }));
+        setDemoDone(true);
+        router.push(`/bookings/${request.id}`);
+      } catch {
+        setError('Unable to save the demo request. Allow browser storage and retry; your entered details are still here.');
+        submitting.current = false;
+      } finally { setBusy(false); }
+      return;
+    }
+    if (!contact || !verified) {
       setError('Sign in with a verified contact before submitting. Your draft is saved in this browser tab.');
       return;
     }
+    submitting.current=true;
     setBusy(true);
     try {
       const result = await mutate('book', payload());
@@ -144,16 +201,17 @@ export function BookingForm({ contact, repeat }: { contact: string | null; repea
         f.set('file', file);
         const r = await fetch('/api/uploads', { method: 'POST', body: f });
         if (!r.ok) {
-          sessionStorage.removeItem('kum-booking-draft');
-          router.push(`/bookings/${result.id}?upload=retry`);
+          sessionStorage.removeItem('kum-booking-draft');sessionStorage.removeItem('kum-booking-key');sessionStorage.removeItem('kum-booking-step');
+          router.push(`/bookings/${result.id}?placed=1&upload=retry`);
           return;
         }
       }
-      sessionStorage.removeItem('kum-booking-draft');
-      router.push(`/bookings/${result.id}`);
+      sessionStorage.removeItem('kum-booking-draft');sessionStorage.removeItem('kum-booking-key');sessionStorage.removeItem('kum-booking-step');
+      router.push(`/bookings/${result.id}?placed=1`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unable to submit. Retry your request.');
     } finally {
+      submitting.current=false;
       setBusy(false);
     }
   }
@@ -166,8 +224,8 @@ export function BookingForm({ contact, repeat }: { contact: string | null; repea
             key={label}
             className={i === step ? 'current' : ''}
             aria-current={i === step ? 'step' : undefined}
-            onClick={() => i < step && move(i)}
-            disabled={i > step}
+            type="button" onClick={() => i < step && move(i)}
+            disabled={i > step || busy || demoDone || !ready}
           >
             <span>{i + 1}</span>{label}
           </button>
@@ -176,14 +234,15 @@ export function BookingForm({ contact, repeat }: { contact: string | null; repea
       <div className="split">
         <div>
           <div className="card" tabIndex={-1} ref={section}>
-            <form onSubmit={(e) => { e.preventDefault(); void handleNext(); }}>
+            <form aria-busy={busy} onSubmit={(e) => { e.preventDefault(); void handleNext(); }}>
               {step === 0 && (
                 <>
                   <h2>Choose Required Care</h2>
-                  <p className="muted">Select a service. We'll tailor the next steps to your needs.</p>
+                  {demo && <p className="notice">Try a service request using editable fictional details. {sheetSync ? 'Submitting also copies these details to Google Sheets, labeled as demo data.' : 'Your progress is saved only in this browser.'}</p>}
+                  <p className="muted">Select a service. We’ll tailor the next steps to your needs.</p>
                   <div className="grid3">
                     {[
-                      { id: 'CLEANING', name: 'Home Cleaning', icon: Brush, text: 'Care for your home, with a tailored scope.', price: 'From \u20b95,000' },
+                      { id: 'CLEANING', name: 'Home Cleaning', icon: Brush, text: 'Care for your home, with a tailored scope.', price: 'From ₹5,000' },
                       { id: 'LAUNDRY', name: 'Laundry Pickup', icon: WashingMachine, text: 'Wash & Fold or Wash & Iron, collected from your door.', price: 'Quote on request' },
                       { id: 'BOTH', name: 'Both Services', icon: Sparkles, text: 'Coordinate home cleaning and your laundry pickup.', price: 'Cleaning + laundry quote' },
                     ].map((s) => (
@@ -277,10 +336,11 @@ export function BookingForm({ contact, repeat }: { contact: string | null; repea
                     </>
                   )}
                   <h3>Your contact & service address</h3>
-                  <p className="notice">{contact ? `Account contact: ${contact}` : 'Sign in before submitting to verify your contact. Your draft stays in this tab.'}</p>
+                  <p className="notice">{isDemoMode() ? 'Fictional sample details are provided. Edit them to test the form; no real personal information is needed.' : (contact ? `Account email: ${contact}${verified?' (verified)':' — verify before submitting'}` : 'Sign in before submitting to verify your contact. Your draft stays in this tab.')}</p>
                   <div className="grid2">
                     {([
                       ['name', 'Full name'],
+                      ['phone', 'Mobile number'],
                       ['locality', 'Locality in Kozhikode'],
                       ['accessContact', 'Access contact name and phone'],
                       ['floorLift', 'Floor and lift information'],
@@ -313,12 +373,13 @@ export function BookingForm({ contact, repeat }: { contact: string | null; repea
                       }}
                     />
                   </Field>
-                  <small>Photos upload privately after your booking is created. File selections must be reattached after a page reload.</small>
+                  <small>{demo ? 'Demo photos are not uploaded or saved. Use a sample image only; reselect after refresh.' : 'Photos upload privately after your booking is created. File selections must be reattached after a page reload.'}</small>
                 </>
               )}
               {step === 2 && (
                 <>
                   <h2>Request Your Appointments</h2>
+                  {demo && <p className="soft">Sample availability: cleaning at 10:00 AM or 2:00 PM; laundry pickup at 11:00 AM or 4:00 PM IST. These are fictional preferences, not reserved slots.</p>}
                   <p className="notice">All times are Asia/Kolkata (IST). Preferred times are not confirmed appointments. Duration and availability are reviewed by operations.</p>
                   {cleaning && (
                     <Field label="Requested cleaning appointment">
@@ -351,34 +412,36 @@ export function BookingForm({ contact, repeat }: { contact: string | null; repea
                   <h2>Review Your Request</h2>
                   <div className="row">
                     <h3>{human(draft.service)} service</h3>
-                    <button type="button" className="btn ghost small" onClick={() => move(0)}>Edit service</button>
+                    <button type="button" className="btn ghost small" disabled={busy || demoDone} onClick={() => move(0)}>Edit service</button>
                   </div>
                   <div className="soft">
-                    {cleaning && <p>{draft.cleaning.propertyType} \u00b7 {draft.cleaning.bedrooms} bedrooms \u00b7 {draft.cleaning.bathrooms} bathrooms \u00b7 {draft.cleaning.area}</p>}
-                    {washing && <p>{draft.laundry.bags} laundry bag(s) \u00b7 {human(draft.laundry.type)}</p>}
+                    {cleaning && <p>{draft.cleaning.propertyType} · {draft.cleaning.bedrooms} bedrooms · {draft.cleaning.bathrooms} bathrooms · {draft.cleaning.area}</p>}
+                    {washing && <p>{draft.laundry.bags} laundry bag(s) · {human(draft.laundry.type)}</p>}
                     <p>{draft.name}<br />{draft.fullAddress}<br />{draft.locality}, Kozhikode</p>
-                    <button type="button" className="btn ghost small" onClick={() => move(1)}>Edit details</button>
+                    <button type="button" className="btn ghost small" disabled={busy || demoDone} onClick={() => move(1)}>Edit details</button>
                   </div>
                   <div className="divider" />
-                  <h3>Requested times \u00b7 IST</h3>
-                  {cleaning && <p>Cleaning: {draft.cleaningTime.replace('T', ' ')}</p>}
+                  <h3>Requested times · IST</h3>
+                  {cleaning && <p>Cleaning: {draft.cleaningTime ? `${dateTime(localToISO(draft.cleaningTime))} IST` : 'Not selected'}</p>}
                   {washing && (
                     <p>
-                      Pickup: {draft.service === 'BOTH' && draft.collectDuringCleaning ? 'During cleaning' : draft.pickupTime.replace('T', ' ')}<br />
+                      Pickup: {draft.service === 'BOTH' && draft.collectDuringCleaning ? 'During cleaning' : draft.pickupTime ? `${dateTime(localToISO(draft.pickupTime))} IST` : 'Not selected'}<br />
                       Return: {draft.returnPreference || 'Team to propose an estimate'}
                     </p>
                   )}
-                  <button type="button" className="btn ghost small" onClick={() => move(2)}>Edit schedule</button>
+                  <button type="button" className="btn ghost small" disabled={busy || demoDone} onClick={() => move(2)}>Edit schedule</button>
                   <div className="divider" />
                   <div className="notice">Final price: awaiting itemised quote. You will approve the exact scope, charges and proposed appointments before confirmation.</div>
-                  {!contact && <p style={{ marginTop: 20 }}><Link className="btn secondary" href="/sign-in">Sign in to verify contact</Link></p>}
+                  {!isDemoMode() && (!contact || !verified) && <p style={{ marginTop: 20 }}><Link className="btn secondary" href="/sign-in?callbackUrl=%2Fbook">Sign in to verify contact</Link></p>}
+
                 </>
               )}
+              {storageError && <p className="error" role="alert">{storageError}</p>}
               {error && <p className="error" role="alert" style={{ marginTop: 20 }}>{error}</p>}
               <div className="form-footer">
-                {step > 0 ? <button type="button" className="btn ghost" onClick={() => move(step - 1)}>Back</button> : <span />}
-                <button className="btn" disabled={busy || !ready}>
-                  {busy ? 'Submitting request\u2026' : step === 3 ? 'Submit booking request' : `Continue to ${['Details', 'Schedule', 'Review'][step]}`}
+                {step > 0 && demo ? <button type="button" className="btn ghost" disabled={busy || demoDone} onClick={() => move(step - 1)}>Previous step</button> : <span />}
+                <button type="submit" className="btn" disabled={busy || !ready || demoDone || (demo && !!storageError)}>
+                  {busy ? 'Saving request…' : step === 3 ? 'Place service request' : `Continue to ${['Details', 'Schedule', 'Review'][step]}`}
                   <ArrowRight size={16} />
                 </button>
               </div>
@@ -401,7 +464,7 @@ export function BookingForm({ contact, repeat }: { contact: string | null; repea
               <p><small>SERVICE LOCATION</small><br />{draft.locality || 'Add your locality'}</p>
             </div>
             <div className="soft">
-              <p className="row"><span>Home cleaning</span><strong>{cleaning ? 'From \u20b95,000' : 'Not selected'}</strong></p>
+              <p className="row"><span>Home cleaning</span><strong>{cleaning ? 'From ₹5,000' : 'Not selected'}</strong></p>
               <p className="row"><span>Laundry</span><strong>{washing ? 'Quote required' : 'Not selected'}</strong></p>
               <div className="divider" />
               <strong>Final total pending quote</strong>

@@ -76,10 +76,10 @@ function layout(title: string, preheader: string, content: string): { subject: s
 
 function escapeHtml(str: string): string {
   return str
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
     .replace(/'/g, '&' + '#39;');
 }
 
@@ -150,7 +150,7 @@ export async function getTemplate(kind: string, entityId: string): Promise<{ sub
       let appointmentsHtml = '';
       if (quote.appointments) {
         try {
-          const appointments = JSON.parse(quote.appointments as string) as Array<{ kind: string; start: string; end: string }>;
+          const appointments = (typeof quote.appointments==='string'?JSON.parse(quote.appointments):quote.appointments) as Array<{ kind: string; start: string; end: string }>;
           appointmentsHtml = appointments.map(a => `
             <div class="detail-row">
               <span class="detail-label">${a.kind.charAt(0) + a.kind.slice(1).toLowerCase()}</span>
@@ -195,7 +195,7 @@ export async function getTemplate(kind: string, entityId: string): Promise<{ sub
         </div>
         <div class="notice">
           <strong>Quote version:</strong> ${quote.version}<br/>
-          <strong>Valid for:</strong> 7 days
+          <strong>Next step:</strong> Review the scope and proposed appointments
         </div>
         <p style="text-align: center; margin-top: 32px;"><a href="${bookingUrl}" class="btn">Review & Approve Quote</a></p>
         <p style="font-size: 13px; color: ${MUTED_COLOR}; text-align: center; margin-top: 16px;">No payment is collected now. You approve the exact scope and charges before we confirm.</p>
@@ -282,7 +282,7 @@ export async function getTemplate(kind: string, entityId: string): Promise<{ sub
           <h2 class="section-title">Your message</h2>
           <div class="address-box">${escapeHtml(support?.message || 'No message')}</div>
         </div>
-        <div class="notice">Our team will review and respond within 4 business hours.</div>
+        <div class="notice">Our team will review your request and respond in your booking.</div>
         <p style="text-align: center; margin-top: 32px;"><a href="${bookingUrl}" class="btn">View Conversation</a></p>
       `;
       return layout('Support request received', 'We\'ll get back to you soon', content);
