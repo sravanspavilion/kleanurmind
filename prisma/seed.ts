@@ -1,5 +1,6 @@
 import { PrismaClient, Role, OrderStatus, CleaningStatus, LaundryStatus, AppointmentKind } from '@prisma/client';
-import { hash } from 'bcryptjs';
+import bcrypt from 'bcryptjs';
+const { hash } = bcrypt;
 
 const db = new PrismaClient();
 
@@ -76,8 +77,10 @@ async function main() {
       role: Role.ADMIN,
       active: true,
       emailVerified: new Date(),
+      passwordHash: adminPassword,
     },
   });
+  if (!admin.passwordHash) await db.user.update({ where: { id: admin.id }, data: { passwordHash: adminPassword } });
   console.log(`✅ Admin: ${admin.email}`);
 
   // 4. Create Staff Users
@@ -106,8 +109,10 @@ async function main() {
         role: s.role,
         active: true,
         emailVerified: new Date(),
+        passwordHash: staffPassword,
       },
     });
+    if (!user.passwordHash) await db.user.update({ where: { id: user.id }, data: { passwordHash: staffPassword } });
     staff.push(user);
   }
   console.log(`✅ Staff: ${staff.length} users created`);
@@ -118,6 +123,7 @@ async function main() {
   const deliveryStaff = staff.filter(s => s.role === Role.DELIVERY);
 
   for (const cleaner of cleaners) {
+    if (await db.staffAvailability.count({ where: { staffId: cleaner.id } })) continue;
     for (let day = 0; day < 30; day++) {
       const date = new Date();
       date.setDate(date.getDate() + day);
@@ -136,6 +142,7 @@ async function main() {
   }
 
   for (const ls of laundryStaff) {
+    if (await db.staffAvailability.count({ where: { staffId: ls.id } })) continue;
     for (let day = 0; day < 30; day++) {
       const date = new Date();
       date.setDate(date.getDate() + day);
@@ -154,6 +161,7 @@ async function main() {
   }
 
   for (const ds of deliveryStaff) {
+    if (await db.staffAvailability.count({ where: { staffId: ds.id } })) continue;
     for (let day = 0; day < 30; day++) {
       const date = new Date();
       date.setDate(date.getDate() + day);
@@ -194,8 +202,10 @@ async function main() {
         role: Role.CUSTOMER,
         active: true,
         emailVerified: new Date(),
+        passwordHash: customerPassword,
       },
     });
+    if (!user.passwordHash) await db.user.update({ where: { id: user.id }, data: { passwordHash: customerPassword } });
 
     await db.customerProfile.upsert({
       where: { userId: user.id },
@@ -203,9 +213,11 @@ async function main() {
       create: { userId: user.id },
     });
 
+    const profileId = (await db.customerProfile.findUnique({ where: { userId: user.id } }))!.id;
+    if (await db.address.count({ where: { profileId } })) { customers.push(user); continue; }
     await db.address.create({
       data: {
-        profileId: (await db.customerProfile.findUnique({ where: { userId: user.id } }))!.id,
+        profileId,
         locality: c.locality,
         fullAddress: c.address,
         landmark: c.landmark,
@@ -227,7 +239,9 @@ async function main() {
   const areas = city.areas.map(a => a.name);
   const services = [cleaningService, laundryService];
 
-  for (let i = 0; i < 20; i++) {
+  const existingOrders = await db.order.count();
+  if (existingOrders) console.log('Sample orders already present; skipping order seeding.');
+  for (let i = 0; existingOrders === 0 && i < 20; i++) {
     const customer = customers[i % customers.length];
     const profile = await db.customerProfile.findUnique({ where: { userId: customer.id } });
     const address = await db.address.findFirst({ where: { profileId: profile!.id } });
@@ -409,7 +423,7 @@ async function main() {
       }
     }
   }
-  console.log(`✅ Sample orders: 20 created across all statuses`);
+  if (!existingOrders) console.log(`✅ Sample orders: 20 created across all statuses`);
 
   // 8. Create Settings
   await db.setting.upsert({

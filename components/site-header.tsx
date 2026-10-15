@@ -15,7 +15,7 @@ export function isStaffRole(role?: string | null): boolean {
   return !!role && (STAFF_ROLES as readonly string[]).includes(role);
 }
 
-export function SiteHeader({ user, demo = false }: { user: HeaderUser; demo?: boolean }) {
+export function SiteHeader({ user, demo = false, accounts = false }: { user: HeaderUser; demo?: boolean; accounts?: boolean }) {
   const path = usePathname() || '/';
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -78,7 +78,10 @@ export function SiteHeader({ user, demo = false }: { user: HeaderUser; demo?: bo
         <div className="header-actions">
           <Link href="/book" className="btn primary-action">Book a Service</Link>
           {demo ? (
-            <span className="badge" title="You are exploring fictional sample data">Demo</span>
+            <>
+              {accounts && <Link href={signInHref} className="btn secondary">Sign in / Create account</Link>}
+              <span className="badge" title="You are exploring fictional sample data">Demo</span>
+            </>
           ) : user ? (
             <div className="account">
               <Link href="/dashboard" className="btn secondary account-greeting" aria-label={`${greeting}. Open your account portal`} onClick={() => { setMenuOpen(false); setAccountOpen(false); }}>
@@ -137,7 +140,7 @@ export function SiteHeader({ user, demo = false }: { user: HeaderUser; demo?: bo
         <div className="container">
           <nav id="mobile-menu" className="nav mobile-menu" aria-label="Mobile navigation">
             {links.map((link) => navLink(link.href, link.label, () => setMenuOpen(false)))}
-            {!demo && (user ? (
+            {(!demo || accounts) && (user ? (
               <>
                 {navLink('/account', 'Profile', () => setMenuOpen(false))}
                 <button

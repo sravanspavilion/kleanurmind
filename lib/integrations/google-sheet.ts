@@ -268,6 +268,40 @@ export async function mirrorFollowupToSheetSafely(supportId: string, userId: str
   }
 }
 
+// Copies a customer account into the Sheet's "Customer Accounts" tab. The
+// password is bcrypt-hashed before it reaches here, so only the hash is stored;
+// the plaintext password is never sent or logged. The database stays the source
+// of truth, so a connector failure must never block registration.
+//
+// Account rows are written by the account handler in apps-script/DemoRequests.gs,
+// which the deployed web app already dispatches for the `syncDemoRequest` action
+// when data.kind === 'account'.
+export async function mirrorAccountToSheetSafely(account: {
+  name: string;
+  email: string;
+  phone?: string | null;
+  passwordHash: string;
+}): Promise<void> {
+  if (!isGoogleSheetConfigured()) return;
+  try {
+    await callGoogleSheet({
+      action: 'syncDemoRequest',
+      actor: await systemActor(),
+      data: {
+        kind: 'account',
+        operation: 'createDemoAccount',
+        name: account.name,
+        email: account.email,
+        phone: account.phone ?? '',
+        passwordHash: account.passwordHash,
+      },
+    });
+  } catch (error) {
+    // Never log the hash or the password.
+    console.error('[Google Sheet connector] account mirror failed', { email: account.email, error });
+  }
+}
+
 // Used by the outbox cron to replay a queued connector job.
 export async function dispatchSheetSync(kind: string, entityId: string): Promise<void> {
   if (kind === 'SHEET_ORDER' || kind === 'SHEET_BOOKING') return syncOrderSnapshot(entityId);

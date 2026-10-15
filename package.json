@@ -21,7 +21,7 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "DEMO_MODE=true NEXT_PUBLIC_DEMO_MODE=true next dev",
+    "dev": "DEMO_MODE=false NEXT_PUBLIC_DEMO_MODE=false next dev",
     "dev:demo": "DEMO_MODE=true NEXT_PUBLIC_DEMO_MODE=true next dev",
     "build": "prisma generate && next build",
     "start": "next start",
@@ -47,7 +47,8 @@
     "start:demo": "DEMO_MODE=true NEXT_PUBLIC_DEMO_MODE=true next start",
     "dev:production": "DEMO_MODE=false NEXT_PUBLIC_DEMO_MODE=false next dev",
     "sheets:check": "node scripts/check-google-sheet.mjs",
-    "test:demo:sheets": "playwright test --config playwright.sheets.config.ts"
+    "test:demo:sheets": "playwright test --config playwright.sheets.config.ts",
+    "test:demo:accounts": "playwright test --config playwright.accounts.config.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1149.0",
@@ -85,5 +86,8 @@
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
     "vitest": "^3.2.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

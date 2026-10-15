@@ -19,6 +19,9 @@ function doPost(e) {
       return json_({ok:true,data:{version:'operational-mirror-v2',spreadsheetAccessible:true}});
     }
     if(request.action==='syncDemoRequest')return syncDemoRequest_(request.data,props);
+    // Demo client accounts reuse the deployed action; the handler lives in DemoRequests.gs.
+    var accountResponse=(typeof kumDemoAccountsHandle_==='function')?kumDemoAccountsHandle_(request):null;
+    if(accountResponse)return accountResponse;
     if(request.action!=='syncSnapshot')throw new Error('Unsupported action');
     var lock=LockService.getScriptLock();lock.waitLock(20000);
     try {

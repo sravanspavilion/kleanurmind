@@ -76,6 +76,56 @@ Browser verification: with the opt-in local demo running on port 3000, run
 `npm run test:demo:sheets`. This test mocks Sheets responses; it verifies failure,
 retry and persisted success states without sending rows to Google.
 
+## Optional no-sign-in demo → client accounts (Google Sheet)
+
+The public demo normally has no sign-in. You can opt in to a small **client
+account** panel (create account / sign in) whose accounts live in the same Google
+Sheet, in a separate **Customer Accounts** tab:
+
+| Account ID | Name | Email | Phone | Password hash | Created at (IST) | Last login (IST) | Status |
+|---|---|---|---|---|---|---|---|
+
+- The password is **hashed with bcrypt on the website server**. Only the hash is
+  written to the sheet; the real password is never stored, logged or returned to
+  the browser.
+- Login looks the account up by email (case-insensitive) and compares the hash on
+  the server. A correct sign-in stamps `Last login`; failures are generic and do
+  not reveal whether the email exists.
+- This is demo-grade storage (slow, quota-limited) and is not a replacement for
+  the database-backed authentication used outside demo mode.
+- Account actions route through the existing `syncDemoRequest` dispatcher in the
+  deployed Apps Script, so no Code.gs edit is required when you update to this
+  version. Only the Apps Script files in `apps-script/` need replacing/pasting.
+
+Enable it locally in `.env.local`:
+
+```dotenv
+DEMO_ACCOUNTS_ENABLED=true
+```
+
+Update your deployed Apps Script receiver (the same web app used for demo
+requests):
+
+1. In the Apps Script editor, open **`DemoRequests.gs`**.
+2. Select all and replace its contents with `apps-script/DemoRequests.gs` from this
+   repo.
+3. Save and **Deploy → Manage deployments → Edit → Version: New version**. The
+   `/exec` URL can remain the same.
+4. Run `npm run sheets:check` to verify the health endpoint still returns OK.
+5. Restart the site (`npm run dev`).
+
+No `Code.gs` changes are needed. The `OperationalMirror.gs` file in this repo
+still works as an alternate standalone receiver (it defensively checks for the
+account handler). If you maintain both paths, keep the updated files.
+
+Set `DEMO_ACCOUNTS_ENABLED=false` to hide the panel again; the `/sign-in` page
+returns to redirecting to the home page.
+Set `DEMO_ACCOUNTS_ENABLED=false` to hide the panel again; the `/sign-in` page
+returns to redirecting to the home page.
+
+Browser verification: `npm run test:demo:accounts`. It runs the demo on port 3002
+and mocks every `/api/demo/accounts/*` call, so **no rows are written to Google**.
+
 
 ## Verified live connection — 14 October 2026
 

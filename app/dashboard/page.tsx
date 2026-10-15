@@ -13,7 +13,6 @@ export default async function Dashboard() {
   const upcoming = orders.filter(order => !['CANCELLED', 'COMPLETED'].includes(order.status));
   return <div className="container page stack">
     <div className="row"><div><div className="eyebrow">Your customer dashboard</div><h1>Hello, {user.name?.split(' ')[0] || 'there'}!</h1><p>Manage your home cleaning and laundry care.</p></div><Link className="btn" href="/book">Book a service</Link></div>
-    {!isDemoMode() && !user.emailVerified && <div className="notice">Verify your email before submitting a booking. <Link href="/sign-in?callbackUrl=%2Fdashboard">Verify with Google or an email link →</Link></div>}
     <div className="actions"><Link className="btn secondary" href="/bookings">My bookings &amp; history</Link><Link className="btn ghost" href="/account">Profile &amp; service address</Link>{user.role==='ADMIN'&&<Link className="btn ghost" href="/admin">Admin workspace</Link>}{!['CUSTOMER','ADMIN'].includes(user.role)&&<Link className="btn ghost" href="/staff">Assigned jobs</Link>}</div>
     {isDemoMode() && <DemoRequestList/>}
     {!orders.length && <div className="card empty"><h2>A little care starts here</h2><p>Your bookings, quotes and appointments will appear here.</p><Link className="btn" href="/book">Book your first service</Link></div>}

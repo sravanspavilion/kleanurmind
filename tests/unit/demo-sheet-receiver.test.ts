@@ -37,3 +37,57 @@ describe('Apps Script demo receiver', () => {
     expect(row).toMatchObject({Landmark:'Demo Park', 'Access contact':'Demo access', Bedrooms:'0', 'Additional tasks':'Balcony', 'Condition and notes':'Notes', 'Estimated weight (kg)':'2.5', 'Handling instructions':'Separate whites', 'Return preference':'Evening'});
   });
 });
+
+describe('Apps Script demo account receiver', () => {
+  function accountContext(rows: string[][], sheet: unknown) {
+    return createContext({
+      PropertiesService: { getScriptProperties: () => ({ getProperty: () => 'test-sheet' }) },
+      LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
+      SpreadsheetApp: { openById: () => ({ getSheetByName: () => sheet, insertSheet: () => sheet }) },
+      Utilities: { formatDate: () => '15 Oct 2026, 12:00', getUuid: () => '11111111-2222-4333-8444-555555555555' },
+      ContentService: { MimeType: { JSON: 'json' }, createTextOutput: (text: string) => ({ setMimeType: () => JSON.parse(text) }) },
+    });
+  }
+
+  function makeSheet() {
+    const rows: string[][] = [];
+    const sheet = {
+      getLastRow: () => rows.length,
+      appendRow: (values: string[]) => rows.push(values),
+      getRange: (row: number, col: number, count = 1, width = 1) => ({
+        getValues: () => Array.from({ length: count }, (_, r) => Array.from({ length: width }, (_, c) => rows[row-1+r]?.[col-1+c] ?? '')),
+        setValues: (values: string[][]) => { values.forEach((value, r) => { rows[row-1+r] ||= []; value.forEach((cell, c) => { rows[row-1+r][col-1+c] = cell; }); }); },
+        setNumberFormat: () => ({ setValues: (values: string[][]) => { values.forEach((value, r) => { rows[row-1+r] ||= []; value.forEach((cell, c) => { rows[row-1+r][col-1+c] = cell; }); }); } }),
+      }),
+    };
+    return { rows, sheet };
+  }
+
+  it('creates an account once, then reports duplicates', () => {
+    const { rows, sheet } = makeSheet();
+    const context = accountContext(rows, sheet);
+    runInContext(readFileSync('apps-script/DemoRequests.gs', 'utf8'), context);
+    const hash = '$2a$12$abcdefghijklmnopqrstuv';
+    context.account = { name: 'Ananya Demo', email: 'Ananya@Example.Test', phone: '+91 98470 00000', passwordHash: hash };
+    expect(runInContext('kumDemoCreateAccount_(account)', context)).toEqual({ ok: true, data: { accountId: 'ACC-11111111-2222-4333-8444-555555555555', duplicate: false } });
+    expect(runInContext('kumDemoCreateAccount_(account)', context)).toEqual({ ok: true, data: { accountId: 'ACC-11111111-2222-4333-8444-555555555555', duplicate: true } });
+    const row = Object.fromEntries(rows[0].map((header, i) => [header, rows[1][i]]));
+    expect(row).toMatchObject({ Name: 'Ananya Demo', Email: 'ananya@example.test', 'Password hash': hash, Status: 'ACTIVE' });
+    expect(rows).toHaveLength(2);
+  });
+
+  it('finds an account by email and never writes the password back', () => {
+    const { rows, sheet } = makeSheet();
+    const context = accountContext(rows, sheet);
+    runInContext(readFileSync('apps-script/DemoRequests.gs', 'utf8'), context);
+    const hash = '$2a$12$abcdefghijklmnopqrstuv';
+    context.account = { name: 'Ananya Demo', email: 'ananya@example.test', phone: '', passwordHash: hash };
+    runInContext('kumDemoCreateAccount_(account)', context);
+    context.lookup = { email: 'ANANYA@example.test' };
+    const found = runInContext('kumDemoFindAccount_(lookup)', context);
+    expect(found.data.account).toMatchObject({ name: 'Ananya Demo', email: 'ananya@example.test', passwordHash: hash, status: 'ACTIVE' });
+    context.missing = { email: 'nobody@example.test' };
+    expect(runInContext('kumDemoFindAccount_(missing)', context).data.account).toBeNull();
+  });
+});
+

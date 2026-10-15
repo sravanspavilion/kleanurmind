@@ -43,7 +43,7 @@ const initial = {
 
 type Draft = typeof initial;
 
-export function BookingForm({ contact, verified, defaultName='', defaultPhone='', repeat, sheetSync = false }: { sheetSync?: boolean; contact: string | null; verified: boolean; defaultName?: string; defaultPhone?: string; repeat?: Record<string, unknown> }) {
+export function BookingForm({ contact, defaultName='', defaultPhone='', repeat, sheetSync = false }: { sheetSync?: boolean; contact: string | null; defaultName?: string; defaultPhone?: string; repeat?: Record<string, unknown> }) {
   const search = useSearchParams();
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(initial);
@@ -187,8 +187,8 @@ export function BookingForm({ contact, verified, defaultName='', defaultPhone=''
       } finally { setBusy(false); }
       return;
     }
-    if (!contact || !verified) {
-      setError('Sign in with a verified contact before submitting. Your draft is saved in this browser tab.');
+    if (!contact) {
+      setError('Sign in before submitting. Your draft is saved in this browser tab.');
       return;
     }
     submitting.current=true;
@@ -336,7 +336,7 @@ export function BookingForm({ contact, verified, defaultName='', defaultPhone=''
                     </>
                   )}
                   <h3>Your contact & service address</h3>
-                  <p className="notice">{isDemoMode() ? 'Fictional sample details are provided. Edit them to test the form; no real personal information is needed.' : (contact ? `Account email: ${contact}${verified?' (verified)':' — verify before submitting'}` : 'Sign in before submitting to verify your contact. Your draft stays in this tab.')}</p>
+                  <p className="notice">{isDemoMode() ? 'Fictional sample details are provided. Edit them to test the form; no real personal information is needed.' : (contact ? `Account email: ${contact}` : 'Sign in before submitting. Your draft stays in this tab.')}</p>
                   <div className="grid2">
                     {([
                       ['name', 'Full name'],
@@ -432,7 +432,7 @@ export function BookingForm({ contact, verified, defaultName='', defaultPhone=''
                   <button type="button" className="btn ghost small" disabled={busy || demoDone} onClick={() => move(2)}>Edit schedule</button>
                   <div className="divider" />
                   <div className="notice">Final price: awaiting itemised quote. You will approve the exact scope, charges and proposed appointments before confirmation.</div>
-                  {!isDemoMode() && (!contact || !verified) && <p style={{ marginTop: 20 }}><Link className="btn secondary" href="/sign-in?callbackUrl=%2Fbook">Sign in to verify contact</Link></p>}
+                  {!isDemoMode() && !contact && <p style={{ marginTop: 20 }}><Link className="btn secondary" href="/sign-in?callbackUrl=%2Fbook">Sign in to submit request</Link></p>}
 
                 </>
               )}

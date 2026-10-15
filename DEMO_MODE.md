@@ -6,9 +6,10 @@ email, SMS, payments, photo uploads or Google Sheets updates.
 
 ## Run locally
 
-`npm run dev` now starts the authentication-free demo at http://localhost:3000.
-Use `npm run dev:production` to test the protected production flow locally.
-The normal production build/start commands retain production authentication.
+Demo mode is **off by default**. `npm run dev` now starts the normal production
+flow at http://localhost:3000 (real auth, database and Sheets connector). Use
+`npm run dev:demo` to start the authentication-free demo instead. The normal
+production build/start commands also retain production authentication.
 
 ```sh
 npm run dev:demo -- --port 3001
@@ -95,3 +96,28 @@ configure the server signing secret, and deploy the updated Apps Script receiver
 See `GOOGLE_SHEETS.md`. With this option the banner discloses Sheet copying,
 confirmation reports sync status, and reset only clears the browser copy.
 Emails, SMS, payments, production bookings and photo uploads remain disabled.
+
+## Vercel: prevent the NO_SECRET error on the public demo
+
+`npm run dev` only sets demo flags on your own machine. A hosted `npm run build`
+does not inherit that command or your ignored `.env.local` file.
+
+In the Vercel project's Environment Variables, set the following for the target
+Production/Preview environment, then redeploy (including a fresh build):
+
+```dotenv
+DEMO_MODE=true
+NEXT_PUBLIC_DEMO_MODE=true
+DEMO_SHEETS_ENABLED=true
+```
+
+Also configure `GOOGLE_SCRIPT_URL` and the private `GOOGLE_SCRIPT_SECRET` there
+for Sheets copying. Do not publish the secret in client variables or source code.
+A demo deployment does not need `NEXTAUTH_SECRET` because it does not use real
+sessions. `/sign-in` should redirect to `/`, and the page should display the demo
+banner. Existing deployments keep their old environment until redeployed.
+
+For a separate real-account deployment, turn both demo flags off, configure a
+strong server-only `NEXTAUTH_SECRET` and the database/auth providers. Never solve
+a missing production secret with a hard-coded fallback or anonymous access to
+protected APIs.

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { db } from './db';
 import { DomainError } from './domain';
 import { rateLimit } from './security';
+import { mirrorAccountToSheetSafely } from './integrations/google-sheet';
 
 const email = z.string().trim().toLowerCase().email().max(254);
 const password = z.string().min(8, 'Use at least 8 characters.').refine(value => Buffer.byteLength(value, 'utf8') <= 72, 'Password must be at most 72 bytes.');
@@ -23,6 +24,9 @@ export async function registerCustomer(input: unknown) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') throw new DomainError('Unable to create this account. Try signing in with your existing sign-in method.', 409);
     throw error;
   }
+  // Best-effort copy to the Google Sheet's "Customer Accounts" tab (bcrypt hash
+  // only). The account is already created, so a Sheets failure is non-fatal.
+  await mirrorAccountToSheetSafely({ name: value.name, email: value.email, passwordHash });
 }
 
 export async function authenticatePassword(input: unknown) {
