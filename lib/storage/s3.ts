@@ -102,7 +102,7 @@ export async function optimizeImage(file: File, options: { maxWidth?: number; ma
   const image = sharp(buffer);
   const metadata = await image.metadata();
   
-  let resizeOptions: ResizeOptions = {};
+  const resizeOptions: ResizeOptions = {};
   if (metadata.width && metadata.width > maxWidth) {
     resizeOptions.width = maxWidth;
   }

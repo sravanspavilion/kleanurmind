@@ -16,7 +16,7 @@ function kumDemoJson_(value) {
 
 function kumDemoHealth_() {
   SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID')).getId();
-  return kumDemoJson_({ok:true,data:{version:'demo-requests-accounts-v4',spreadsheetAccessible:true}});
+  return kumDemoJson_({ok:true,data:{version:'demo-requests-accounts-v5',spreadsheetAccessible:true}});
 }
 
 function kumDemoSync_(data) {
@@ -106,7 +106,38 @@ function kumDemoAccountsHandle_(request) {
   if (request.action === 'createDemoAccount') return kumDemoCreateAccount_(request.data);
   if (request.action === 'findDemoAccount') return kumDemoFindAccount_(request.data);
   if (request.action === 'touchDemoAccount') return kumDemoTouchAccount_(request.data);
+  if (request.action === 'backfillAccountLinks') return kumDemoBackfillLinks_(request.data);
   return null;
+}
+
+// One-off repair: fills the App User ID column on rows created before the
+// column existed. Idempotent — an already-linked row is never overwritten.
+function kumDemoBackfillLinks_(data) {
+  var links = data && data.links;
+  if (!links || !Array.isArray(links)) throw new Error('Invalid backfill');
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sheet = kumDemoAccountsSheet_(PropertiesService.getScriptProperties());
+    var rows = kumDemoAccountRows_(sheet);
+    var updated = 0;
+    for (var i = 0; i < links.length; i++) {
+      var email = String(links[i].email || '').trim().toLowerCase();
+      var userId = String(links[i].userId || '');
+      if (!email || !userId) continue;
+      for (var r = 0; r < rows.length; r++) {
+        if (String(rows[r][2]).trim().toLowerCase() !== email) continue;
+        if (String(rows[r][8] || '').trim()) break; // already linked; keep the first match
+        sheet.getRange(r + 2, KUM_ACCOUNT_HEADERS.length).setNumberFormat('@').setValues([[kumDemoAccountsText_(userId)]]);
+        rows[r][8] = userId;
+        updated++;
+        break;
+      }
+    }
+    return kumDemoJson_({ ok: true, data: { requested: links.length, updated: updated } });
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function kumDemoAccountsSheet_(props) {

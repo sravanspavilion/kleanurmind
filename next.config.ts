@@ -2,7 +2,9 @@ import type { NextConfig } from 'next';
 
 const config: NextConfig = {
   output: 'standalone',
-  distDir: process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? '.next-demo' : '.next',
+  // Vercel's Next.js adapter expects .next, including for demo deployments.
+  // Keep the separate demo directory only for local development/testing.
+  distDir: process.env.VERCEL !== '1' && process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? '.next-demo' : '.next',
   serverExternalPackages: ['@prisma/client'],
   async headers() {
     return [

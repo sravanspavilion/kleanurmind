@@ -1,4 +1,5 @@
 import type { SmsProvider } from '../providers';
+import type twilio from 'twilio';
 
 interface TwilioConfig {
   accountSid: string;
@@ -18,7 +19,7 @@ function getTwilioConfig(): TwilioConfig | null {
   return { accountSid, authToken, fromNumber };
 }
 
-let twilioClient: any = null;
+let twilioClient: ReturnType<typeof twilio> | null = null;
 
 async function getTwilioClient() {
   if (!twilioClient) {

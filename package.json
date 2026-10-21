@@ -24,6 +24,7 @@
     "dev": "DEMO_MODE=false NEXT_PUBLIC_DEMO_MODE=false next dev",
     "dev:demo": "DEMO_MODE=true NEXT_PUBLIC_DEMO_MODE=true next dev",
     "build": "prisma generate && next build",
+    "build:vercel": "node scripts/vercel-build.mjs",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",

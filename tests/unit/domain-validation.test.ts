@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { transition, orderFinished, canRead, requireAdmin, calculateQuote, refundAvailable, exactQuote, money, human, dateTime, localToISO } from '@/lib/domain';
-import { DomainError } from '@/lib/domain';
+import { DomainError, type Actor } from '@/lib/domain';
 import { bookingSchema, quoteSchema, assignmentSchema, proposedSchema } from '@/lib/validation';
-import { z } from 'zod';
 
 describe('Domain Functions', () => {
   describe('transition', () => {
@@ -72,9 +71,9 @@ describe('Domain Functions', () => {
   });
 
   describe('canRead', () => {
-    const admin: any = { id: 'admin1', role: 'ADMIN' };
-    const customer: any = { id: 'customer1', role: 'CUSTOMER' };
-    const staff: any = { id: 'staff1', role: 'CLEANER' };
+    const admin: Actor = { id: 'admin1', role: 'ADMIN' };
+    const customer: Actor = { id: 'customer1', role: 'CUSTOMER' };
+    const staff: Actor = { id: 'staff1', role: 'CLEANER' };
 
     it('should allow admin to read any order', () => {
       expect(canRead(admin, 'customer1')).toBe(true);
