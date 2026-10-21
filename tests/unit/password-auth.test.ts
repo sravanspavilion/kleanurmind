@@ -16,6 +16,7 @@ describe('Email and password accounts', () => {
   });
 
   it('hashes passwords, fixes the customer role, and authenticates only a valid active account', async () => {
+    vi.mocked(db.user.create).mockResolvedValue({ id: 'user-1' } as Awaited<ReturnType<typeof db.user.create>>);
     await registerCustomer({ name: 'Test', email: 'TEST@example.com', password: 'password123', role: 'ADMIN' });
     const data = vi.mocked(db.user.create).mock.calls[0][0].data;
     if (!data) throw new Error('Expected account creation data');

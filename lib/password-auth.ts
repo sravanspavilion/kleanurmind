@@ -18,15 +18,16 @@ export async function registerCustomer(input: unknown) {
   const existing = await db.user.findFirst({ where: { email: { equals: value.email, mode: 'insensitive' } }, select: { id: true } });
   if (existing) throw new DomainError('Unable to create this account. Try signing in with your existing sign-in method.', 409);
   const passwordHash = await hash(value.password, 12);
+  let created: { id: string };
   try {
-    await db.user.create({ data: { email: value.email, name: value.name, passwordHash, role: 'CUSTOMER', profile: { create: {} } } });
+    created = await db.user.create({ data: { email: value.email, name: value.name, passwordHash, role: 'CUSTOMER', profile: { create: {} } } });
   } catch (error) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') throw new DomainError('Unable to create this account. Try signing in with your existing sign-in method.', 409);
     throw error;
   }
   // Best-effort copy to the Google Sheet's "Customer Accounts" tab (bcrypt hash
   // only). The account is already created, so a Sheets failure is non-fatal.
-  await mirrorAccountToSheetSafely({ name: value.name, email: value.email, passwordHash });
+  await mirrorAccountToSheetSafely({ userId: created.id, name: value.name, email: value.email, passwordHash });
 }
 
 export async function authenticatePassword(input: unknown) {

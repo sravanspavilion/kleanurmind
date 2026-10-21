@@ -277,6 +277,7 @@ export async function mirrorFollowupToSheetSafely(supportId: string, userId: str
 // which the deployed web app already dispatches for the `syncDemoRequest` action
 // when data.kind === 'account'.
 export async function mirrorAccountToSheetSafely(account: {
+  userId: string;
   name: string;
   email: string;
   phone?: string | null;
@@ -290,6 +291,8 @@ export async function mirrorAccountToSheetSafely(account: {
       data: {
         kind: 'account',
         operation: 'createDemoAccount',
+        // Links the account row to the Customer ID used on the booking tabs.
+        userId: account.userId,
         name: account.name,
         email: account.email,
         phone: account.phone ?? '',
@@ -353,5 +356,7 @@ export async function syncOrderSnapshot(orderId: string): Promise<void> {
     'Staff Assignments':order.appointments.flatMap(a=>a.assignments.map(s=>({id:s.id,...common,appointmentId:a.id,staffId:s.staffId,active:s.active,start:toIST(s.start),end:toIST(s.end)}))),
     'Customer Followups':order.supports.map(s=>({id:s.id,...common,kind:s.kind,message:s.message,status:s.status,response:s.response,createdAt:s.createdAt})),
   };
-  await callGoogleSheet({action:'syncSnapshot',actor:await systemActor(),data:{bookingId:order.id,rows},requestId:`snapshot:${order.id}:${crypto.randomUUID()}`});
+  // The deployed web-app router (Code.gs) only dispatches the `syncDemoRequest`
+  // action, so snapshots reuse it with kind 'snapshot' (see kumSyncSnapshot_).
+  await callGoogleSheet({action:'syncDemoRequest',actor:await systemActor(),data:{kind:'snapshot',bookingId:order.id,rows},requestId:`snapshot:${order.id}:${crypto.randomUUID()}`});
 }

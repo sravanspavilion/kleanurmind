@@ -18,7 +18,12 @@ function doPost(e) {
       SpreadsheetApp.openById(props.getProperty('SPREADSHEET_ID')).getId();
       return json_({ok:true,data:{version:'operational-mirror-v2',spreadsheetAccessible:true}});
     }
-    if(request.action==='syncDemoRequest')return syncDemoRequest_(request.data,props);
+    if(request.action==='syncDemoRequest'){
+      // Kinds reuse this action so the Code.gs dispatch needs no change.
+      if(request.data&&request.data.kind==='snapshot'&&typeof kumSyncSnapshot_==='function')return kumSyncSnapshot_(request.data);
+      if(request.data&&request.data.kind==='account'&&typeof kumDemoAccountsHandle_==='function')return kumDemoAccountsHandle_({action:request.data.operation,data:request.data});
+      return syncDemoRequest_(request.data,props);
+    }
     // Demo client accounts reuse the deployed action; the handler lives in DemoRequests.gs.
     var accountResponse=(typeof kumDemoAccountsHandle_==='function')?kumDemoAccountsHandle_(request):null;
     if(accountResponse)return accountResponse;

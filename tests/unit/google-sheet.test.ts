@@ -159,7 +159,9 @@ describe('complete service request snapshot', () => {
       await syncOrderSnapshot('order-1');
       const envelope = JSON.parse(fetchMock.mock.calls[0][1].body);
       const request = JSON.parse(envelope.payload);
-      expect(request.action).toBe('syncSnapshot');
+      expect(request.action).toBe('syncDemoRequest');
+      expect(request.data.kind).toBe('snapshot');
+      expect(request.data.bookingId).toBe('order-1');
       expect(request.data.rows.Bookings[0]).toMatchObject({ mobile: '9000000000', service: 'BOTH', accessContact: 'Asha', floorLift: 'First floor', utilities: 'Available', landmark: 'Park' });
       expect(request.data.rows.Cleaning[0].details).toEqual(cleaning);
       expect(request.data.rows.Laundry[0].details).toEqual(laundry);
