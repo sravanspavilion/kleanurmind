@@ -5,6 +5,7 @@
 // Reusing the `syncDemoRequest` action keeps every feature reachable through the
 // existing Code.gs dispatch with no router changes.
 //
+// Also deploy WebsiteSnapshots.gs alongside this file for live booking support.
 // To update: open this file in the Apps Script editor, replace its contents with
 // this file, Save, then Deploy > Manage deployments > Edit > Version: New version.
 // The /exec URL stays the same. Code.gs already dispatches `syncDemoRequest` to
@@ -57,40 +58,13 @@ function kumDemoSync_(data) {
 }
 
 // --- Live booking snapshots ---------------------------------------------------
-// Each tab holds one row per database record: [Record ID, Booking ID, Customer
-// ID, Updated at, Record JSON]. The record id upserts, so replays and later
-// status changes update the same row instead of duplicating it.
+// WebsiteSnapshots.gs preserves existing readable columns and adds missing
+// website fields. Record ID upserts keep retries from creating duplicates.
 
 var KUM_SNAPSHOT_TABS = ['Bookings', 'Cleaning', 'Laundry', 'Quotes', 'Appointments', 'Staff Assignments', 'Customer Followups'];
 
 function kumSyncSnapshot_(data) {
-  if (!data || !/^[A-Za-z0-9_-]{6,64}$/.test(String(data.bookingId || '')) || !data.rows || typeof data.rows !== 'object') throw new Error('Invalid snapshot');
-  var lock = LockService.getScriptLock();
-  lock.waitLock(20000);
-  try {
-    var spreadsheet = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID'));
-    KUM_SNAPSHOT_TABS.forEach(function (name) {
-      var rows = data.rows[name] || [];
-      var sheet = spreadsheet.getSheetByName(name) || spreadsheet.insertSheet(name);
-      if (sheet.getLastRow() === 0) sheet.appendRow(['Record ID', 'Booking ID', 'Customer ID', 'Updated at', 'Record JSON']);
-      // Refuse to overwrite a different existing sheet layout.
-      if (sheet.getRange(1, 1).getValue() !== 'Record ID' || sheet.getRange(1, 5).getValue() !== 'Record JSON') throw new Error('Sheet layout differs: ' + name);
-      var ids = sheet.getLastRow() > 1 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues().map(function (row) { return String(row[0]); }) : [];
-      rows.forEach(function (row) {
-        if (!row || !row.id || row.bookingId !== data.bookingId) throw new Error('Invalid record');
-        var index = ids.indexOf(String(row.id));
-        var number = index < 0 ? sheet.getLastRow() + 1 : index + 2;
-        // JSON encoding keeps free text inert; identifiers are escaped as text too.
-        var values = [String(row.id), String(row.bookingId), String(row.customerId), new Date().toISOString(), JSON.stringify(row)]
-          .map(function (value) { return /^[=+@\-]/.test(value) ? "'" + value : value; });
-        sheet.getRange(number, 1, 1, 5).setNumberFormat('@').setValues([values]);
-        if (index < 0) ids.push(String(row.id));
-      });
-    });
-    return kumDemoJson_({ ok: true, data: { bookingId: data.bookingId } });
-  } finally {
-    lock.releaseLock();
-  }
+  return kumWebsiteSnapshot_(data);
 }
 
 // --- Demo client accounts --------------------------------------------------

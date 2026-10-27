@@ -143,3 +143,25 @@ also preserves the full validated payload. Demo photo files are not uploaded.
 Local configuration does not automatically update a hosted site's environment.
 If deploying elsewhere, configure its server URL, shared secret and demo Sheets
 opt-in flag too; never expose the secret as a NEXT_PUBLIC variable.
+
+## Website booking receiver repair — 22 October 2026
+
+The active version 5 receiver lacked the website snapshot dispatcher. The existing
+Bookings sheet also uses readable columns, not the five-column snapshot layout.
+The repair in `apps-script/WebsiteSnapshots.gs` supports those existing columns,
+preserves manual cells, appends missing fields, and upserts using Record ID.
+
+Deploy both `DemoRequests.gs` and `WebsiteSnapshots.gs` alongside the existing
+Code.gs, retaining the current deployment URL and authentication settings. The
+standalone `OperationalMirror.gs` alternative also needs these helper files.
+The existing deployment was updated to version 6 on 22 October 2026, preserving
+its URL and authentication. The deployed DemoRequests account helpers were kept
+in place; only the snapshot dispatch and WebsiteSnapshots helper were added.
+
+The live fixture uses booking ID `TEST-20261022-connector-1958`. Two attempts
+before this repair returned an INTERNAL error. On 27 October 2026, the signed
+live retry returned HTTP 200 and ok:true, confirming one Bookings row, one
+Cleaning row, one Laundry row, and two Appointments rows. The fictional record
+is named WEBSITE CONNECTION TEST - Fictional and must not be dispatched.
+The 11 focused connector/receiver tests also pass. This verifies the live
+connector write; it is not a browser checkout or notification delivery test.
